@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "763936361451",
+    "project_id": "sigmawords-22567",
+    "storage_bucket": "sigmawords-22567.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:763936361451:android:251f4049d67132745027ae",
+        "android_client_info": {
+          "package_name": "com.samedtemiz.sigmawords"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAbrSCzaNM1mdNW022rae-xVOpWIkH1Zqw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
