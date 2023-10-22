@@ -7,6 +7,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -14,6 +15,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -21,10 +23,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.android.gms.auth.api.identity.Identity
-import com.samedtemiz.sigmawords.authentication.sign_in.GoogleAuthUiClient
+import com.samedtemiz.sigmawords.authentication.GoogleAuthUiClient
 import com.samedtemiz.sigmawords.presentation.profile.ProfileScreen
-import com.samedtemiz.sigmawords.presentation.signin.SignInScreen
-import com.samedtemiz.sigmawords.authentication.sign_in.SignInViewModel
+import com.samedtemiz.sigmawords.presentation.sign_in.SignInScreen
+import com.samedtemiz.sigmawords.authentication.SignInViewModel
+import com.samedtemiz.sigmawords.presentation.home.HomeScreen
+import com.samedtemiz.sigmawords.presentation.home.HomeViewModel
 import com.samedtemiz.sigmawords.ui.theme.SigmaWordsTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -38,9 +42,10 @@ class MainActivity : ComponentActivity() {
             oneTapClient = Identity.getSignInClient(applicationContext)
         )
     }
-//    private val viewModel by lazy {
-//        ViewModelProvider(this, defaultViewModelProviderFactory).get(MainViewModel::class.java)
-//    }
+
+    private val viewModel by lazy {
+        ViewModelProvider(this, defaultViewModelProviderFactory).get(HomeViewModel::class.java)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,13 +77,13 @@ class MainActivity : ComponentActivity() {
                                     }
                                 }
                             )
-                            
-                            LaunchedEffect(key1 = Unit){
-                                if(googleAuthUiClient.getSignedInUser() != null){
-                                    navController.navigate("profile")
+
+                            LaunchedEffect(key1 = Unit) {
+                                if (googleAuthUiClient.getSignedInUser() != null) {
+                                    navController.navigate("home")
                                 }
                             }
-                            
+
                             LaunchedEffect(key1 = state.isSignInSuccessful) {
                                 if (state.isSignInSuccessful) {
                                     Toast.makeText(
@@ -87,7 +92,7 @@ class MainActivity : ComponentActivity() {
                                         Toast.LENGTH_LONG
                                     ).show()
 
-                                    navController.navigate("profile")
+                                    navController.navigate("home")
                                     viewModel.resetState()
                                 }
                             }
@@ -124,22 +129,31 @@ class MainActivity : ComponentActivity() {
                                 }
                             )
                         }
+
+                        composable("home") {
+                            HomeScreen(
+                                viewModel = viewModel,
+                                onSignOut = {
+                                    lifecycleScope.launch {
+                                        googleAuthUiClient.singOut()
+                                        Toast.makeText(
+                                            applicationContext,
+                                            "Sign out ",
+                                            Toast.LENGTH_LONG
+                                        ).show()
+
+                                        navController.popBackStack()
+                                    }
+                                },
+                                onProfileScreen = {
+                                    navController.navigate("profile")
+                                }
+                            )
+                        }
                     }
                 }
 
             }
         }
     }
-
-//    val wordsList by viewModel.wordsList.observeAsState()
-//    LazyColumn(){
-//        items(wordsList ?: listOf()){ word ->
-//            Column {
-//                Text(text = word.term, fontWeight = FontWeight.Bold, fontSize = 20.sp)
-//                Text(text = word.meaning)
-//                Text(text = word.meaning2)
-//                Text(text = word.meaning3)
-//            }
-//        }
-//    }
 }

@@ -1,4 +1,4 @@
-package com.samedtemiz.sigmawords.authentication.sign_in
+package com.samedtemiz.sigmawords.authentication
 
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow

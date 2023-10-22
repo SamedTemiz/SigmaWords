@@ -19,7 +19,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.samedtemiz.sigmawords.authentication.sign_in.UserData
+import com.samedtemiz.sigmawords.authentication.UserData
 
 @Composable
 fun ProfileScreen(
