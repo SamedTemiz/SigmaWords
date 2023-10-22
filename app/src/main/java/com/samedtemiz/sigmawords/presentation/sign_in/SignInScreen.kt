@@ -1,4 +1,4 @@
-package com.samedtemiz.sigmawords.presentation.signin
+package com.samedtemiz.sigmawords.presentation.sign_in
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.Box
@@ -12,7 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.samedtemiz.sigmawords.authentication.sign_in.SignInState
+import com.samedtemiz.sigmawords.authentication.SignInState
 
 @Composable
 fun SignInScreen(
