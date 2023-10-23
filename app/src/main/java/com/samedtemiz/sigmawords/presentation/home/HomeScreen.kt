@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
@@ -49,10 +50,14 @@ fun HomeScreen(
             }
         }
 
-        Column {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.fillMaxSize()
+        ) {
             wordList.value?.run {
                 when (this) {
                     is UiState.Loading -> {
+                        CircularProgressIndicator()
                         Log.d("HomeScreen", "Loading")
                     }
 

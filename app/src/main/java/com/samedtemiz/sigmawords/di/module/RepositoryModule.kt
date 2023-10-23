@@ -1,8 +1,8 @@
 package com.samedtemiz.sigmawords.di.module
 
 import com.google.firebase.firestore.FirebaseFirestore
-import com.samedtemiz.sigmawords.data.repository.WordRepository
-import com.samedtemiz.sigmawords.data.repository.WordRepositoryImp
+import com.samedtemiz.sigmawords.data.repository.word.WordRepository
+import com.samedtemiz.sigmawords.data.repository.word.WordRepositoryImp
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -17,7 +17,8 @@ object RepositoryModule {
     @Singleton
     fun provideWordRepository(
         database: FirebaseFirestore
-    ): WordRepository{
+    ): WordRepository {
         return WordRepositoryImp(database)
     }
+
 }

@@ -10,5 +10,5 @@ data class Word(
     val sigmaDate: String? = "",
     val sigmaLevel: Int? = 0,
     val success: Int? = 0,
-    val term: String? = ""
+    val term: String? = "",
 )

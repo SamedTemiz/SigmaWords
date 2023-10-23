@@ -1,20 +1,19 @@
-package com.samedtemiz.sigmawords.data.repository
+package com.samedtemiz.sigmawords.data.repository.word
 
-import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.toObject
 import com.samedtemiz.sigmawords.data.model.Word
-import com.samedtemiz.sigmawords.util.FireStoreValues
+import com.samedtemiz.sigmawords.data.repository.word.WordRepository
 import com.samedtemiz.sigmawords.util.UiState
 
 class WordRepositoryImp(
     private val database: FirebaseFirestore
 ) : WordRepository {
-    override fun getWords(result: (UiState<List<Word>>) -> Unit) {
+    override fun getAllWords(result: (UiState<List<Word>>) -> Unit, wordsListName: String) {
         database
             .collection("AppDatabase")
             .document("Words")
-            .collection("A1")
+            .collection(wordsListName)
             .get()
             .addOnSuccessListener { documents ->
                 val words = arrayListOf<Word>()
@@ -36,4 +35,5 @@ class WordRepositoryImp(
                 )
             }
     }
+
 }
