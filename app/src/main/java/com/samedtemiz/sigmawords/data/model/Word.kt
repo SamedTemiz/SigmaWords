@@ -1,8 +1,5 @@
 package com.samedtemiz.sigmawords.data.model
 
-import androidx.room.Entity
-import androidx.room.PrimaryKey
-
 data class Word(
     val category: String? = "",
     val id: String? = "",
