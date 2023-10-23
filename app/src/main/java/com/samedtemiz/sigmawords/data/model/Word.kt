@@ -1,5 +1,8 @@
 package com.samedtemiz.sigmawords.data.model
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
 data class Word(
     val category: String? = "",
     val id: String? = "",
@@ -10,5 +13,5 @@ data class Word(
     val sigmaDate: String? = "",
     val sigmaLevel: Int? = 0,
     val success: Int? = 0,
-    val term: String? = ""
+    val term: String? = "",
 )
