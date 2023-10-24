@@ -75,12 +75,14 @@ dependencies {
 
     // Kotlin
     implementation("androidx.navigation:navigation-fragment-ktx:$nav_version")
-    implementation("androidx.navigation:navigation-compose:2.7.4")
+    implementation("androidx.navigation:navigation-compose:$nav_version")
     implementation("androidx.navigation:navigation-ui-ktx:$nav_version")
 
     // Dagger-Hilt
     implementation("com.google.dagger:hilt-android:2.46")
     kapt("com.google.dagger:hilt-android-compiler:2.46")
+    kapt("androidx.hilt:hilt-compiler:1.0.0")
+    implementation("androidx.hilt:hilt-navigation-compose:1.0.0")
 
     // Retrofit - Gson
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
@@ -105,4 +107,20 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
     implementation("androidx.compose.runtime:runtime-livedata")
     implementation("androidx.core:core-splashscreen:1.0.1")
+
+    // Custom Navigation Bar
+    implementation("com.exyte:animated-navigation-bar:1.0.0")
+
+    // Splash API
+    implementation("androidx.core:core-splashscreen:1.1.0-alpha02")
+
+    // Pager and Indicators - Accompanist
+    implementation("com.google.accompanist:accompanist-pager:0.13.0")
+    implementation("com.google.accompanist:accompanist-pager-indicators:0.13.0")
+
+    // DataStore Preferences
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
+
+    //lottie
+    implementation("com.airbnb.android:lottie-compose:5.2.0")
 }

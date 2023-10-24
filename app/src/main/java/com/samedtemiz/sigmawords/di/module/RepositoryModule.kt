@@ -1,11 +1,14 @@
 package com.samedtemiz.sigmawords.di.module
 
+import android.content.Context
 import com.google.firebase.firestore.FirebaseFirestore
+import com.samedtemiz.sigmawords.data.DataStoreRepository
 import com.samedtemiz.sigmawords.data.repository.word.WordRepository
 import com.samedtemiz.sigmawords.data.repository.word.WordRepositoryImp
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
@@ -21,4 +24,10 @@ object RepositoryModule {
         return WordRepositoryImp(database)
     }
 
+
+    @Provides
+    @Singleton
+    fun provideDataStoreRepository(
+        @ApplicationContext context: Context
+    ) = DataStoreRepository(context = context)
 }
