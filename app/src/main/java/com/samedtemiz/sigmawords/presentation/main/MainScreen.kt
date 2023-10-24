@@ -3,6 +3,7 @@ package com.samedtemiz.sigmawords.presentation.main
 import android.annotation.SuppressLint
 import android.widget.Toast
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
@@ -10,12 +11,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -30,6 +30,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -65,7 +66,7 @@ fun MainScreen(
     var selectedIndex by remember { mutableIntStateOf(0) }
 
     Scaffold(
-        modifier = Modifier.padding(all = 12.dp),
+        modifier = Modifier.padding(all = 6.dp),
         bottomBar = {
             AnimatedNavigationBar(
                 selectedIndex = selectedIndex,
@@ -100,52 +101,59 @@ fun MainScreen(
         }
     ) {
         // NavHost gelicek
-        NavHost(
-            navController = navController,
-            route = Screen.Main.route,
-            startDestination = Screen.Main.Home.route
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .clip(RoundedCornerShape(34.dp))
+                .background(MaterialTheme.colorScheme.background)
         ) {
-            composable(Screen.Main.Home.route) {
-                // Home Screen
-                HomeScreen()
-            }
-
-            composable(Screen.Main.Quiz.route) {
-                // Quiz Screen
-                QuizScreen()
-            }
-
-            composable(Screen.Main.Profile.route) {
-                // Profile Screen
-                val userData = remember { googleAuthUiClient.getSignedInUser() }
-
-                var signOutTrigger by remember { mutableStateOf(false) }
-
-                if (signOutTrigger) {
-                    LaunchedEffect(true) {
-                        // Coroutine içerisinde çalışacak işlemler
-                        try {
-                            googleAuthUiClient.singOut()
-                            withContext(Dispatchers.Main) {
-                                Toast.makeText(
-                                    context,
-                                    "Sign out",
-                                    Toast.LENGTH_LONG
-                                ).show()
-                            }
-                            navController.popBackStack()
-                        } catch (e: Exception) {
-                            // Hata yönetimi
-                        }
-                    }
+            NavHost(
+                navController = navController,
+                route = Screen.Main.route,
+                startDestination = Screen.Main.Home.route
+            ) {
+                composable(Screen.Main.Home.route) {
+                    // Home Screen
+                    HomeScreen()
                 }
 
-                ProfileScreen(
-                    userData = userData,
-                    onSignOut = {
-                        signOutTrigger = true
+                composable(Screen.Main.Quiz.route) {
+                    // Quiz Screen
+                    QuizScreen()
+                }
+
+                composable(Screen.Main.Profile.route) {
+                    // Profile Screen
+                    val userData = remember { googleAuthUiClient.getSignedInUser() }
+
+                    var signOutTrigger by remember { mutableStateOf(false) }
+
+                    if (signOutTrigger) {
+                        LaunchedEffect(true) {
+                            // Coroutine içerisinde çalışacak işlemler
+                            try {
+                                googleAuthUiClient.singOut()
+                                withContext(Dispatchers.Main) {
+                                    Toast.makeText(
+                                        context,
+                                        "Sign out",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
+                                navController.popBackStack()
+                            } catch (e: Exception) {
+                                // Hata yönetimi
+                            }
+                        }
                     }
-                )
+
+                    ProfileScreen(
+                        userData = userData,
+                        onSignOut = {
+                            signOutTrigger = true
+                        }
+                    )
+                }
             }
         }
     }

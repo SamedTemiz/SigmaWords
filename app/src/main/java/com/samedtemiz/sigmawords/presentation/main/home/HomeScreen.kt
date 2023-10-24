@@ -39,6 +39,7 @@ fun HomeScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(Color.LightGray)
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
