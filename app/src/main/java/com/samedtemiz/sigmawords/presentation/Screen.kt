@@ -7,6 +7,7 @@ sealed class Screen(
     val route: String,
     val title: String
 ) {
+
     // Welcome Screens
     object Welcome : Screen(route = "welcome", title = "Welcome") {
         object Splash : Screen(route = "splash", title = "Splash")

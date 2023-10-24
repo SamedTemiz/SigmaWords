@@ -31,6 +31,7 @@ import com.google.android.gms.auth.api.identity.Identity
 import com.samedtemiz.sigmawords.authentication.GoogleAuthUiClient
 import com.samedtemiz.sigmawords.authentication.SignInViewModel
 import com.samedtemiz.sigmawords.presentation.Screen
+import com.samedtemiz.sigmawords.presentation.main.MainScreen
 import com.samedtemiz.sigmawords.presentation.main.home.HomeViewModel
 import com.samedtemiz.sigmawords.presentation.main.profile.ProfileScreen
 import com.samedtemiz.sigmawords.presentation.sign_in.SignInScreen
@@ -61,9 +62,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-//        installSplashScreen().setKeepOnScreenCondition{
-//            !splashViewModel.isLoading.value
-//        }
         setContent {
             SigmaWordsTheme {
 
@@ -74,7 +72,10 @@ class MainActivity : ComponentActivity() {
                     !splashViewModel.isLoading.value
 
                     val navController = rememberNavController()
-                    NavHost(navController = navController, startDestination = Screen.Welcome.route) {
+                    NavHost(
+                        navController = navController,
+                        startDestination = Screen.Welcome.route
+                    ) {
                         // Welcome
                         navigation(
                             startDestination = Screen.Welcome.Splash.route,
@@ -82,7 +83,10 @@ class MainActivity : ComponentActivity() {
                         ) {
                             composable(Screen.Welcome.Splash.route) {
                                 // Splash Screen
-                                SplashScreen(navController = navController, splashViewModel = splashViewModel)
+                                SplashScreen(
+                                    navController = navController,
+                                    splashViewModel = splashViewModel
+                                )
                             }
 
                             composable(Screen.Welcome.OnBoard.route) {
@@ -92,7 +96,7 @@ class MainActivity : ComponentActivity() {
                         }
 
                         // Sign in
-                        composable(Screen.SignIn.route){
+                        composable(Screen.SignIn.route) {
                             val viewModel = viewModel<SignInViewModel>()
                             val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -146,36 +150,8 @@ class MainActivity : ComponentActivity() {
                         }
 
                         // Main
-                        navigation(
-                            startDestination = Screen.Main.Home.route,
-                            route = Screen.Main.route
-                        ) {
-                            composable(Screen.Main.Home.route) {
-                                // Home Screen
-                            }
-
-                            composable(Screen.Main.Quiz.route) {
-                                // Quiz Screen
-                            }
-
-                            composable(Screen.Main.Profile.route) {
-                                // Profile Screen
-                                ProfileScreen(
-                                    userData = googleAuthUiClient.getSignedInUser(),
-                                    onSignOut = {
-                                        lifecycleScope.launch {
-                                            googleAuthUiClient.singOut()
-                                            Toast.makeText(
-                                                applicationContext,
-                                                "Sign out ",
-                                                Toast.LENGTH_LONG
-                                            ).show()
-
-                                            navController.popBackStack()
-                                        }
-                                    }
-                                )
-                            }
+                        composable(Screen.Main.route) {
+                            MainScreen(googleAuthUiClient = googleAuthUiClient)
                         }
                     }
                 }
@@ -186,11 +162,4 @@ class MainActivity : ComponentActivity() {
 
 }
 
-@Composable
-inline fun <reified T : ViewModel> NavBackStackEntry.sharedViewModel(navController: NavController): T {
-    val navGraphRoute = destination.parent?.route ?: return viewModel()
-    val parentEntry = remember(this) {
-        navController.getBackStackEntry(navGraphRoute)
-    }
-    return viewModel(parentEntry)
-}
+

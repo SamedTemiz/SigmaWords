@@ -23,6 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.samedtemiz.sigmawords.presentation.ui.theme.SigmaWordsTheme
@@ -30,9 +31,7 @@ import com.samedtemiz.sigmawords.util.UiState
 
 @Composable
 fun HomeScreen(
-    viewModel: HomeViewModel,
-    onSignOut: () -> Unit,
-    onProfileScreen: () -> Unit
+    viewModel: HomeViewModel = hiltViewModel(),
 ) {
 
     val wordList = viewModel.words.observeAsState()
@@ -40,16 +39,8 @@ fun HomeScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(Color.LightGray)
     ) {
-        Row {
-            Button(onClick = onSignOut) {
-                Text(text = "Sign out")
-            }
-            Button(onClick = onProfileScreen) {
-                Text(text = "Profile")
-            }
-        }
-
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.fillMaxSize()
