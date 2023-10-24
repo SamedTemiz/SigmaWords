@@ -1,4 +1,4 @@
-package com.samedtemiz.sigmawords.presentation.home
+package com.samedtemiz.sigmawords.presentation.main.home
 
 import android.util.Log
 import android.widget.Space
@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.samedtemiz.sigmawords.ui.theme.SigmaWordsTheme
+import com.samedtemiz.sigmawords.presentation.ui.theme.SigmaWordsTheme
 import com.samedtemiz.sigmawords.util.UiState
 
 @Composable
@@ -62,6 +62,7 @@ fun HomeScreen(
                     }
 
                     is UiState.Failure -> {
+                        Text(text = "HOME SCREEN", color = Color.Black)
                         Log.d("HomeScreen", error.toString())
                     }
 

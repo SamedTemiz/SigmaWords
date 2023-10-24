@@ -1,4 +1,4 @@
-package com.samedtemiz.sigmawords.presentation.home
+package com.samedtemiz.sigmawords.presentation.main.home
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData

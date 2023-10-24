@@ -1,4 +1,4 @@
-package com.samedtemiz.sigmawords.presentation.profile
+package com.samedtemiz.sigmawords.presentation.main.profile
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

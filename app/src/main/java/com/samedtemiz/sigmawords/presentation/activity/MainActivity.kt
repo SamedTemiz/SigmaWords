@@ -10,30 +10,43 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navigation
 import com.google.android.gms.auth.api.identity.Identity
 import com.samedtemiz.sigmawords.authentication.GoogleAuthUiClient
-import com.samedtemiz.sigmawords.presentation.profile.ProfileScreen
-import com.samedtemiz.sigmawords.presentation.sign_in.SignInScreen
 import com.samedtemiz.sigmawords.authentication.SignInViewModel
-import com.samedtemiz.sigmawords.presentation.home.HomeScreen
-import com.samedtemiz.sigmawords.presentation.home.HomeViewModel
-import com.samedtemiz.sigmawords.ui.theme.SigmaWordsTheme
+import com.samedtemiz.sigmawords.presentation.Screen
+import com.samedtemiz.sigmawords.presentation.main.home.HomeViewModel
+import com.samedtemiz.sigmawords.presentation.main.profile.ProfileScreen
+import com.samedtemiz.sigmawords.presentation.sign_in.SignInScreen
+import com.samedtemiz.sigmawords.presentation.welcome.SplashViewModel
+import com.samedtemiz.sigmawords.presentation.ui.theme.SigmaWordsTheme
+import com.samedtemiz.sigmawords.presentation.welcome.OnboardingScreen
+import com.samedtemiz.sigmawords.presentation.welcome.SplashScreen
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    @Inject
+    lateinit var splashViewModel: SplashViewModel
 
     private val googleAuthUiClient by lazy {
         GoogleAuthUiClient(
@@ -43,12 +56,14 @@ class MainActivity : ComponentActivity() {
     }
 
     private val viewModel by lazy {
-        ViewModelProvider(this, defaultViewModelProviderFactory).get(HomeViewModel::class.java)
+        ViewModelProvider(this, defaultViewModelProviderFactory)[HomeViewModel::class.java]
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        installSplashScreen()
+//        installSplashScreen().setKeepOnScreenCondition{
+//            !splashViewModel.isLoading.value
+//        }
         setContent {
             SigmaWordsTheme {
 
@@ -56,9 +71,28 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
+                    !splashViewModel.isLoading.value
+
                     val navController = rememberNavController()
-                    NavHost(navController = navController, startDestination = "sign_in") {
-                        composable("sign_in") {
+                    NavHost(navController = navController, startDestination = Screen.Welcome.route) {
+                        // Welcome
+                        navigation(
+                            startDestination = Screen.Welcome.Splash.route,
+                            route = Screen.Welcome.route
+                        ) {
+                            composable(Screen.Welcome.Splash.route) {
+                                // Splash Screen
+                                SplashScreen(navController = navController, splashViewModel = splashViewModel)
+                            }
+
+                            composable(Screen.Welcome.OnBoard.route) {
+                                // OnBoard Screen
+                                OnboardingScreen(navController = navController)
+                            }
+                        }
+
+                        // Sign in
+                        composable(Screen.SignIn.route){
                             val viewModel = viewModel<SignInViewModel>()
                             val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -79,7 +113,7 @@ class MainActivity : ComponentActivity() {
 
                             LaunchedEffect(key1 = Unit) {
                                 if (googleAuthUiClient.getSignedInUser() != null) {
-                                    navController.navigate("home")
+                                    navController.navigate(Screen.Main.route)
                                 }
                             }
 
@@ -91,7 +125,7 @@ class MainActivity : ComponentActivity() {
                                         Toast.LENGTH_LONG
                                     ).show()
 
-                                    navController.navigate("home")
+                                    navController.navigate(Screen.Main.route)
                                     viewModel.resetState()
                                 }
                             }
@@ -111,43 +145,37 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        composable("profile") {
-                            ProfileScreen(
-                                userData = googleAuthUiClient.getSignedInUser(),
-                                onSignOut = {
-                                    lifecycleScope.launch {
-                                        googleAuthUiClient.singOut()
-                                        Toast.makeText(
-                                            applicationContext,
-                                            "Sign out ",
-                                            Toast.LENGTH_LONG
-                                        ).show()
+                        // Main
+                        navigation(
+                            startDestination = Screen.Main.Home.route,
+                            route = Screen.Main.route
+                        ) {
+                            composable(Screen.Main.Home.route) {
+                                // Home Screen
+                            }
 
-                                        navController.popBackStack()
+                            composable(Screen.Main.Quiz.route) {
+                                // Quiz Screen
+                            }
+
+                            composable(Screen.Main.Profile.route) {
+                                // Profile Screen
+                                ProfileScreen(
+                                    userData = googleAuthUiClient.getSignedInUser(),
+                                    onSignOut = {
+                                        lifecycleScope.launch {
+                                            googleAuthUiClient.singOut()
+                                            Toast.makeText(
+                                                applicationContext,
+                                                "Sign out ",
+                                                Toast.LENGTH_LONG
+                                            ).show()
+
+                                            navController.popBackStack()
+                                        }
                                     }
-                                }
-                            )
-                        }
-
-                        composable("home") {
-                            HomeScreen(
-                                viewModel = viewModel,
-                                onSignOut = {
-                                    lifecycleScope.launch {
-                                        googleAuthUiClient.singOut()
-                                        Toast.makeText(
-                                            applicationContext,
-                                            "Sign out ",
-                                            Toast.LENGTH_LONG
-                                        ).show()
-
-                                        navController.popBackStack()
-                                    }
-                                },
-                                onProfileScreen = {
-                                    navController.navigate("profile")
-                                }
-                            )
+                                )
+                            }
                         }
                     }
                 }
@@ -155,4 +183,14 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+}
+
+@Composable
+inline fun <reified T : ViewModel> NavBackStackEntry.sharedViewModel(navController: NavController): T {
+    val navGraphRoute = destination.parent?.route ?: return viewModel()
+    val parentEntry = remember(this) {
+        navController.getBackStackEntry(navGraphRoute)
+    }
+    return viewModel(parentEntry)
 }

@@ -1,4 +1,4 @@
-package com.samedtemiz.sigmawords.ui.theme
+package com.samedtemiz.sigmawords.presentation.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
