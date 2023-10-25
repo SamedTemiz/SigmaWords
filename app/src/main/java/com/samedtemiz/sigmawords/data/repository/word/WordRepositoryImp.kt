@@ -9,6 +9,7 @@ import com.samedtemiz.sigmawords.util.UiState
 class WordRepositoryImp(
     private val database: FirebaseFirestore
 ) : WordRepository {
+
     override fun getAllWords(result: (UiState<List<Word>>) -> Unit, wordsListName: String) {
         database
             .collection("AppDatabase")

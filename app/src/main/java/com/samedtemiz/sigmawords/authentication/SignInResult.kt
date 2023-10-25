@@ -1,13 +1,7 @@
 package com.samedtemiz.sigmawords.authentication
 
 data class SignInResult(
-    val data: UserData?,
+    val data: com.samedtemiz.sigmawords.data.model.User?,
     val errorMessage: String?
-)
-
-data class UserData(
-    val userId: String,
-    val username: String?,
-    val profilePictureUrl: String?
 )
 

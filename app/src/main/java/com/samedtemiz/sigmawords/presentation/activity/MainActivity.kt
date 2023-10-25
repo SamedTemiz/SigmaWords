@@ -16,6 +16,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -30,6 +31,7 @@ import androidx.navigation.navigation
 import com.google.android.gms.auth.api.identity.Identity
 import com.samedtemiz.sigmawords.authentication.GoogleAuthUiClient
 import com.samedtemiz.sigmawords.authentication.SignInViewModel
+import com.samedtemiz.sigmawords.data.model.User
 import com.samedtemiz.sigmawords.presentation.Screen
 import com.samedtemiz.sigmawords.presentation.main.MainScreen
 import com.samedtemiz.sigmawords.presentation.main.home.HomeViewModel
@@ -97,7 +99,7 @@ class MainActivity : ComponentActivity() {
 
                         // Sign in
                         composable(Screen.SignIn.route) {
-                            val viewModel = viewModel<SignInViewModel>()
+                            val viewModel: SignInViewModel = hiltViewModel()
                             val state by viewModel.state.collectAsStateWithLifecycle()
 
                             val launcher = rememberLauncherForActivityResult(
@@ -123,6 +125,8 @@ class MainActivity : ComponentActivity() {
 
                             LaunchedEffect(key1 = state.isSignInSuccessful) {
                                 if (state.isSignInSuccessful) {
+                                    viewModel.createUserDatabaseIfNotExist(googleAuthUiClient.getSignedInUser()!!)
+
                                     Toast.makeText(
                                         applicationContext,
                                         "Sign in successful",
@@ -151,7 +155,10 @@ class MainActivity : ComponentActivity() {
 
                         // Main
                         composable(Screen.Main.route) {
-                            MainScreen(googleAuthUiClient = googleAuthUiClient)
+                            MainScreen(
+                                mainNavController = navController,
+                                googleAuthUiClient = googleAuthUiClient
+                            )
                         }
                     }
                 }
