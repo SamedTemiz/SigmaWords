@@ -16,7 +16,7 @@ class HomeViewModel @Inject constructor(private val wordRepository: WordReposito
     val words: LiveData<UiState<List<Word>>> = _words
 
     init {
-        getWords()
+        //getWords()
     }
 
     private fun getWords() {

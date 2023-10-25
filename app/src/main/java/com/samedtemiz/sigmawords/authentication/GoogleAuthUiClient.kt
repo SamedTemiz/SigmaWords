@@ -10,6 +10,7 @@ import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.samedtemiz.sigmawords.R
+import com.samedtemiz.sigmawords.data.model.User
 import kotlinx.coroutines.tasks.await
 import java.util.concurrent.CancellationException
 
@@ -43,7 +44,7 @@ class GoogleAuthUiClient(
             val user = auth.signInWithCredential(googleCredentials).await().user
             SignInResult(
                 data = user?.run {
-                    UserData(
+                    User(
                         userId = uid,
                         username = displayName,
                         profilePictureUrl = photoUrl?.toString()
@@ -71,8 +72,8 @@ class GoogleAuthUiClient(
         }
     }
 
-    fun getSignedInUser() : UserData? = auth.currentUser?.run{
-        UserData(
+    fun getSignedInUser() : User? = auth.currentUser?.run{
+        User(
             userId = uid,
             username = displayName,
             profilePictureUrl = photoUrl?.toString()
