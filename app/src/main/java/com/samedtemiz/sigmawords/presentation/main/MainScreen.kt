@@ -72,17 +72,17 @@ fun MainScreen(
     var selectedIndex by remember { mutableIntStateOf(0) }
 
     Scaffold(
-        containerColor = MaterialTheme.colorScheme.primaryContainer,
+        containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
             AnimatedNavigationBar(
                 selectedIndex = selectedIndex,
                 modifier = Modifier.height(64.dp),
                 ballAnimation = Parabolic(tween(300)),
                 indentAnimation = Height(tween(300)),
-                barColor = MaterialTheme.colorScheme.primary,
-                ballColor = MaterialTheme.colorScheme.primary,
+                barColor = MaterialTheme.colorScheme.background,
+                ballColor = MaterialTheme.colorScheme.onBackground,
 
-            ) {
+                ) {
                 navigationBarItems.forEach { item ->
                     Box(
                         modifier = Modifier
@@ -96,10 +96,10 @@ fun MainScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            modifier = Modifier.size(26.dp),
+                            modifier = Modifier.size(32.dp),
                             imageVector = item.icon,
                             contentDescription = item.title,
-                            tint = if (selectedIndex == item.ordinal) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.inversePrimary
+                            tint = if (selectedIndex == item.ordinal) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.tertiary
                         )
                     }
                 }

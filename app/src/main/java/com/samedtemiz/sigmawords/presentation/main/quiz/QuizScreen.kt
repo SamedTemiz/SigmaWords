@@ -20,6 +20,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -44,6 +45,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.samedtemiz.sigmawords.R
+import com.samedtemiz.sigmawords.presentation.main.quiz.question.QuestionScreen
 import com.samedtemiz.sigmawords.presentation.ui.theme.SigmaWordsTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -167,55 +169,15 @@ fun BottomSection() {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(10.dp)
+                .fillMaxHeight(0.8f)
                 .clip(RoundedCornerShape(10.dp))
-                .background(Color.LightGray)
+                .background(MaterialTheme.colorScheme.secondaryContainer)
         ) {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight(0.15f)
-            ) {
-                Text(
-                    text = "ability",
-                    fontSize = 30.sp,
-                    fontWeight = FontWeight.Bold,
-                    fontFamily = FontFamily(Font(R.font.acherus_grotesque)),
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight(0.60f)
-            ) {
-                Column(
-                    verticalArrangement = Arrangement.SpaceBetween,
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    repeat(4) {
-                        OptionCard()
-                    }
-                }
-            }
-            Box(modifier = Modifier.fillMaxSize()) {
-                Row(
-                    horizontalArrangement = Arrangement.End,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(20.dp)
-                ) {
-                    Button(
-                        onClick = {},
-                        shape = RoundedCornerShape(10.dp),
-                        modifier = Modifier.size(100.dp, 60.dp)
-                    ) {
-                        Text(text = "NEXT")
-                    }
-                }
-            }
+            QuestionScreen(
+                question = "ability",
+                options = listOf("yetenek", "koşmak", "engelli", "kesinlikle"),
+                onOptionSelected = {}
+            )
         }
     }
 }
