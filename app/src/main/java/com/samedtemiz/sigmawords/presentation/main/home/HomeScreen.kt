@@ -1,5 +1,6 @@
 package com.samedtemiz.sigmawords.presentation.main.home
 
+import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import android.util.Log
 import android.widget.Space
 import androidx.compose.foundation.Image
@@ -20,6 +21,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
@@ -50,17 +53,23 @@ import com.samedtemiz.sigmawords.util.UiState
 fun HomeScreen(
 //    viewModel: HomeViewModel = hiltViewModel(),
 ) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(15.dp)
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background
     ) {
-        Column {
-            HeaderCard()
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(15.dp)
+        ) {
+            Column {
+                HeaderCard()
 
-            ContentCard()
+                ContentCard()
+            }
         }
     }
+
 }
 
 @Composable
@@ -169,6 +178,7 @@ fun ContentCard() {
 }
 
 @Preview(showSystemUi = true)
+@Preview(showSystemUi = true, uiMode = UI_MODE_NIGHT_YES)
 @Composable
 fun HomeScreenPreview() {
     SigmaWordsTheme {
