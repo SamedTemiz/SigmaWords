@@ -15,15 +15,26 @@ class HomeViewModel @Inject constructor(private val wordRepository: WordReposito
     private val _words = MutableLiveData<UiState<List<Word>>>()
     val words: LiveData<UiState<List<Word>>> = _words
 
+    private val _sigmaWords = MutableLiveData<List<Word>>()
+    val sigmaWords: LiveData<List<Word>> = _sigmaWords
+
     init {
         //getWords()
+//        getSigmaWords()
     }
 
-    private fun getWords() {
-        _words.value = UiState.Loading
+//    private fun getWords() {
+//        _words.value = UiState.Loading
+//
+//        wordRepository.getAllWords(
+//            result = { _words.value = it },
+//            wordsListName = "AllWords"
+//        )
+//    }
 
-        wordRepository.getAllWords(
-            result = { _words.value = it },
+    private fun getSigmaWords(){
+        wordRepository.getSigmaWords(
+            result = _sigmaWords,
             wordsListName = "AllWords"
         )
     }

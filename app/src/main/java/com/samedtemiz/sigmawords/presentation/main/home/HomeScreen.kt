@@ -46,12 +46,13 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.samedtemiz.sigmawords.R
+import com.samedtemiz.sigmawords.data.model.Word
 import com.samedtemiz.sigmawords.presentation.ui.theme.SigmaWordsTheme
 import com.samedtemiz.sigmawords.util.UiState
 
 @Composable
 fun HomeScreen(
-//    viewModel: HomeViewModel = hiltViewModel(),
+    viewModel: HomeViewModel = hiltViewModel(),
 ) {
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -65,7 +66,7 @@ fun HomeScreen(
             Column {
                 HeaderCard()
 
-                ContentCard()
+                ContentCard(viewModel)
             }
         }
     }
@@ -150,7 +151,9 @@ fun HeaderCard() {
 }
 
 @Composable
-fun ContentCard() {
+fun ContentCard(viewModel: HomeViewModel) {
+    val sigma = viewModel.sigmaWords.observeAsState()
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween,
@@ -172,7 +175,16 @@ fun ContentCard() {
                 .padding(10.dp)
                 .background(Color.Yellow)
         ) {
+            Column {
+                sigma.value?.let {
 
+                    for (word in it) {
+
+                        Text(text = word.term!!, color = Color.Black)
+                    }
+                }
+
+            }
         }
     }
 }

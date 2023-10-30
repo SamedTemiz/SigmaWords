@@ -6,4 +6,5 @@ interface UserRepository {
 
     fun createUserDatabase(user: User)
     fun checkUserDatabaseExist(id: String) : Boolean
+
 }
