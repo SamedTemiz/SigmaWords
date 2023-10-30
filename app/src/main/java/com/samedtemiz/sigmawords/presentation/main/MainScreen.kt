@@ -128,8 +128,8 @@ fun MainScreen(
 
                 composable(Screen.Main.Quiz.route) {
                     // Quiz Screen
-                    val viewModel: QuizViewModel = hiltViewModel()
-                    QuizScreen()
+                    val quizViewModel: QuizViewModel = hiltViewModel()
+                    QuizScreen(viewModel = quizViewModel)
                 }
 
                 composable(Screen.Main.Profile.route) {
