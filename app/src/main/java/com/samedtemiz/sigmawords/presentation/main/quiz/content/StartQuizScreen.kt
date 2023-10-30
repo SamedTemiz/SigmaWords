@@ -33,10 +33,12 @@ import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.samedtemiz.sigmawords.R
 import com.samedtemiz.sigmawords.presentation.Screen
+import com.samedtemiz.sigmawords.presentation.main.quiz.QuizViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StartQuizScreen(
+    viewModel: QuizViewModel,
     navController: NavHostController
 ) {
     val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.solving))
@@ -59,6 +61,8 @@ fun StartQuizScreen(
             ),
             modifier = Modifier.fillMaxWidth(0.6f),
             onClick = {
+                viewModel.updateQuizStatus(isSolved = true)
+
                 navController.popBackStack()
                 navController.navigate(Screen.Main.Quiz.DailyQuiz.route)
             }

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -25,10 +26,10 @@ import com.samedtemiz.sigmawords.presentation.ui.theme.SigmaWordsTheme
 
 @Composable
 fun QuizScreen(
-//    viewModel: QuizViewModel,
+    viewModel: QuizViewModel,
     navController: NavHostController = rememberNavController(),
 ) {
-    var isSolved by remember { mutableStateOf(false) }
+    val isSolved by viewModel.isSolved.observeAsState()
 
     Box(
         modifier = Modifier
@@ -39,10 +40,13 @@ fun QuizScreen(
         NavHost(
             navController = navController,
             route = Screen.Main.Quiz.route,
-            startDestination = Screen.Main.Quiz.Start.route
+            startDestination = if (isSolved == false) Screen.Main.Quiz.Start.route else Screen.Main.Quiz.Celebration.route
         ) {
             composable(route = Screen.Main.Quiz.Start.route) {
-                StartQuizScreen(navController = navController)
+                StartQuizScreen(
+                    viewModel = viewModel,
+                    navController = navController
+                )
             }
 
             composable(route = Screen.Main.Quiz.Celebration.route) {
@@ -50,7 +54,10 @@ fun QuizScreen(
             }
 
             composable(route = Screen.Main.Quiz.DailyQuiz.route) {
-                DailyQuizScreen(navController = navController)
+                DailyQuizScreen(
+                    viewModel = viewModel,
+                    navController = navController
+                )
             }
         }
 

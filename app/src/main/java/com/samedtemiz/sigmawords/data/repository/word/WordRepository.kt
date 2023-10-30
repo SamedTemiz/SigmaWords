@@ -9,5 +9,5 @@ interface WordRepository {
 
     fun getAllWords(result: MutableLiveData<List<Word>>, wordsListName: String)
     fun getSigmaWords(result: MutableLiveData<List<Word>>, wordsListName: String)
-
+    fun getWordWithId(id: String, result: MutableLiveData<Word>, wordsListName: String)
 }

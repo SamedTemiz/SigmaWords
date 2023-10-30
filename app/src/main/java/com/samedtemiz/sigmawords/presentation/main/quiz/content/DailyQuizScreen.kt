@@ -1,5 +1,6 @@
 package com.samedtemiz.sigmawords.presentation.main.quiz.content
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.expandVertically
@@ -24,12 +25,14 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -47,13 +50,17 @@ import androidx.navigation.NavController
 import com.samedtemiz.sigmawords.R
 import com.samedtemiz.sigmawords.data.model.Question
 import com.samedtemiz.sigmawords.presentation.Screen
+import com.samedtemiz.sigmawords.presentation.main.quiz.QuizViewModel
+import com.samedtemiz.sigmawords.util.UiState
 
 @Composable
 fun DailyQuizScreen(
+    viewModel: QuizViewModel,
     navController: NavController
 ) {
-    var progress by remember { mutableStateOf(0f) }
+    val quizState by viewModel.quiz.observeAsState()
 
+    var progress by remember { mutableStateOf(0f) }
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
@@ -66,32 +73,32 @@ fun DailyQuizScreen(
             label = ""
         ).value
 
-//        quizState?.run {
-//            when (this) {
-//                is UiState.Loading -> {
-//                    CircularProgressIndicator()
-//                }
-//
-//                is UiState.Failure -> {
-//
-//                }
-//
-//                is UiState.Success -> {
-//                    TopProgress(
-//                        questionIndex = 2,
-//                        totalQuestionsCount = 15,
-//                        progress = progress
-//                    )
-//
-//                    QuestionSection(
-//                        this.data,
-//                        onOptionSelected = {
-//                            progress += 1.0F
-//                        }
-//                    )
-//                }
-//            }
-//        }
+        quizState?.run {
+            when (this) {
+                is UiState.Loading -> {
+                    CircularProgressIndicator()
+                }
+
+                is UiState.Failure -> {
+                    Log.d("DailyQuizScreen", this.error.toString())
+                }
+
+                is UiState.Success -> {
+                    TopProgress(
+                        questionIndex = 2,
+                        totalQuestionsCount = 15,
+                        progress = progress
+                    )
+
+                    QuestionSection(
+                        this.data,
+                        onOptionSelected = {
+                            progress += 1.0F
+                        }
+                    )
+                }
+            }
+        }
     }
 }
 

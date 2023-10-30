@@ -114,6 +114,7 @@ class MainActivity : ComponentActivity() {
                                             viewModel.onSignInResult(signInResult)
                                         }
                                     }
+
                                 }
                             )
 
