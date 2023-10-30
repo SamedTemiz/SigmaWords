@@ -8,6 +8,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -39,7 +40,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
@@ -54,8 +57,10 @@ import com.exyte.animatednavbar.animation.indendshape.shapeCornerRadius
 import com.samedtemiz.sigmawords.authentication.GoogleAuthUiClient
 import com.samedtemiz.sigmawords.presentation.Screen
 import com.samedtemiz.sigmawords.presentation.main.home.HomeScreen
+import com.samedtemiz.sigmawords.presentation.main.home.HomeViewModel
 import com.samedtemiz.sigmawords.presentation.main.profile.ProfileScreen
 import com.samedtemiz.sigmawords.presentation.main.quiz.QuizScreen
+import com.samedtemiz.sigmawords.presentation.main.quiz.QuizViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -68,9 +73,9 @@ fun MainScreen(
     googleAuthUiClient: GoogleAuthUiClient
 ) {
     val context = LocalContext.current
+
     val navigationBarItems = remember { NavigationBarItems.values() }
     var selectedIndex by remember { mutableIntStateOf(0) }
-
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
@@ -90,7 +95,6 @@ fun MainScreen(
                             .noRippleClickable {
                                 selectedIndex = item.ordinal
 
-
                                 navController.navigate(item.route)
                             },
                         contentAlignment = Alignment.Center
@@ -109,7 +113,8 @@ fun MainScreen(
 
         Box(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
+                .fillMaxHeight(0.95f)
         ) {
             NavHost(
                 navController = navController,
@@ -123,6 +128,7 @@ fun MainScreen(
 
                 composable(Screen.Main.Quiz.route) {
                     // Quiz Screen
+                    val viewModel: QuizViewModel = hiltViewModel()
                     QuizScreen()
                 }
 
