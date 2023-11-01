@@ -23,6 +23,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -31,6 +34,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -49,6 +53,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.samedtemiz.sigmawords.R
 import com.samedtemiz.sigmawords.data.model.Question
+import com.samedtemiz.sigmawords.data.model.Quiz
 import com.samedtemiz.sigmawords.presentation.Screen
 import com.samedtemiz.sigmawords.presentation.main.quiz.QuizViewModel
 import com.samedtemiz.sigmawords.util.UiState
@@ -62,16 +67,11 @@ fun DailyQuizScreen(
 
     var progress by remember { mutableStateOf(0f) }
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        val questionIndex = 2
-        val totalQuestionsCount = 15
-        progress = animateFloatAsState(
-            targetValue = (questionIndex.toFloat() * 100 / totalQuestionsCount) / 100,
-            label = ""
-        ).value
 
         quizState?.run {
             when (this) {
@@ -84,14 +84,25 @@ fun DailyQuizScreen(
                 }
 
                 is UiState.Success -> {
+                    val quiz = (quizState as UiState.Success<Quiz>).data
+
+                    val currentQuestionIndex = 1 // Şu anki soru indeksi
+                    val totalQuestionsCount = quiz.questions!!.size // Toplam soru sayısı
+                    progress = animateFloatAsState(
+                        targetValue = (currentQuestionIndex.toFloat() * 100 / totalQuestionsCount) / 100,
+                        label = ""
+                    ).value
+
                     TopProgress(
-                        questionIndex = 2,
-                        totalQuestionsCount = 15,
+                        questionIndex = currentQuestionIndex,
+                        totalQuestionsCount = totalQuestionsCount,
                         progress = progress
                     )
 
                     QuestionSection(
-                        this.data,
+                        viewModel = viewModel,
+                        navController,
+                        this.data.questions,
                         onOptionSelected = {
                             progress += 1.0F
                         }
@@ -196,6 +207,8 @@ fun TopProgress(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun QuestionSection(
+    viewModel: QuizViewModel,
+    navController: NavController,
     quizState: List<Question>?,
     onOptionSelected: () -> Unit
 ) {
@@ -209,7 +222,7 @@ fun QuestionSection(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(10.dp)
-                .fillMaxHeight(0.8f)
+                .fillMaxHeight(0.9f)
                 .clip(RoundedCornerShape(10.dp))
                 .background(MaterialTheme.colorScheme.secondaryContainer)
         ) {
@@ -218,13 +231,45 @@ fun QuestionSection(
 
                 HorizontalPager(state = pagerState) { page ->
                     QuestionComponent(
-                        question = quizState[page].questionTerm,
-                        options = quizState[page].options,
+                        question = list[page].questionTerm ?: "",
+                        options = list[page].options ?: listOf(),
                         onOptionSelected = {}
                     )
                 }
             }
 
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp)
+                    .background(Color.Blue),
+                contentAlignment = Alignment.Center
+            ) {
+                Row {
+                    Button(
+                        onClick = { /*TODO*/ },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Magenta)
+                    ) {
+                        Text(text = "ÖNCEKİ")
+                    }
+
+                    Button(onClick = {
+                        viewModel.updateQuizStatus(true)
+
+                        navController.popBackStack()
+                        navController.navigate(Screen.Main.Quiz.Result.route)
+                    }, colors = ButtonDefaults.buttonColors(containerColor = Color.Green)) {
+                        Text(text = "BİTİR")
+                    }
+
+                    Button(
+                        onClick = { /*TODO*/ },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Yellow)
+                    ) {
+                        Text(text = "SONRAKİ")
+                    }
+                }
+            }
         }
     }
 }
@@ -237,8 +282,8 @@ fun QuestionComponent(
 ) {
     Column(
         modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
+            .padding(16.dp)
+            .background(Color.Red),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(

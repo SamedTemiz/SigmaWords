@@ -120,6 +120,7 @@ class MainActivity : ComponentActivity() {
 
                             LaunchedEffect(key1 = Unit) {
                                 if (googleAuthUiClient.getSignedInUser() != null) {
+                                    navController.popBackStack()
                                     navController.navigate(Screen.Main.route)
                                 }
                             }
@@ -134,7 +135,9 @@ class MainActivity : ComponentActivity() {
                                         Toast.LENGTH_LONG
                                     ).show()
 
+                                    navController.popBackStack()
                                     navController.navigate(Screen.Main.route)
+
                                     viewModel.resetState()
                                 }
                             }
