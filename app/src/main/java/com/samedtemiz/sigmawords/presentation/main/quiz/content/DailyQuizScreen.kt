@@ -9,6 +9,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -39,6 +40,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -57,7 +59,9 @@ import com.samedtemiz.sigmawords.data.model.Quiz
 import com.samedtemiz.sigmawords.presentation.Screen
 import com.samedtemiz.sigmawords.presentation.main.quiz.QuizViewModel
 import com.samedtemiz.sigmawords.util.UiState
+import kotlinx.coroutines.launch
 
+private const val TAG = "DailyQuiz"
 @Composable
 fun DailyQuizScreen(
     viewModel: QuizViewModel,
@@ -84,10 +88,8 @@ fun DailyQuizScreen(
                 }
 
                 is UiState.Success -> {
-                    val quiz = (quizState as UiState.Success<Quiz>).data
-
                     val currentQuestionIndex = 1 // Şu anki soru indeksi
-                    val totalQuestionsCount = quiz.questions!!.size // Toplam soru sayısı
+                    val totalQuestionsCount = data.questions!!.size // Toplam soru sayısı
                     progress = animateFloatAsState(
                         targetValue = (currentQuestionIndex.toFloat() * 100 / totalQuestionsCount) / 100,
                         label = ""
@@ -99,14 +101,7 @@ fun DailyQuizScreen(
                         progress = progress
                     )
 
-                    QuestionSection(
-                        viewModel = viewModel,
-                        navController,
-                        this.data.questions,
-                        onOptionSelected = {
-                            progress += 1.0F
-                        }
-                    )
+                    QuizSection(questions = data.questions)
                 }
             }
         }
@@ -206,69 +201,67 @@ fun TopProgress(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun QuestionSection(
-    viewModel: QuizViewModel,
-    navController: NavController,
-    quizState: List<Question>?,
-    onOptionSelected: () -> Unit
-) {
+fun QuizSection(questions: List<Question>) {
+    var isDone by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+
     Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceBetween,
-        modifier = Modifier
-            .fillMaxSize()
+        modifier = Modifier.fillMaxSize()
     ) {
-        Column(
+        val pagerState = rememberPagerState(
+            initialPage = 0,
+            initialPageOffsetFraction = 0f
+        ) {
+            questions.size
+        }
+        HorizontalPager(
+            state = pagerState,
+            userScrollEnabled = false,
+            modifier = Modifier.weight(1f),
+        ) { page ->
+            val question = questions[page]
+            QuestionComponent(question = question) { index ->
+                question.selectedOptionIndex = index
+            }
+        }
+
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(10.dp)
-                .fillMaxHeight(0.9f)
-                .clip(RoundedCornerShape(10.dp))
-                .background(MaterialTheme.colorScheme.secondaryContainer)
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            quizState?.let { list ->
-                val pagerState = rememberPagerState { list.size }
+            Button(
+                onClick = {
+                    scope.launch {
+                        if (pagerState.currentPage > 0) pagerState.animateScrollToPage(pagerState.currentPage - 1)
+                        Log.d(TAG, questions[pagerState.currentPage].toString())
+                    }
+                }
+            ) {
+                Text(text = "Geri")
+            }
 
-                HorizontalPager(state = pagerState) { page ->
-                    QuestionComponent(
-                        question = list[page].questionTerm ?: "",
-                        options = list[page].options ?: listOf(),
-                        onOptionSelected = {}
-                    )
+            if (isDone) {
+                Button(
+                    onClick = {}
+                ) {
+                    Text(text = "Bitir")
                 }
             }
 
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 16.dp)
-                    .background(Color.Blue),
-                contentAlignment = Alignment.Center
-            ) {
-                Row {
-                    Button(
-                        onClick = { /*TODO*/ },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color.Magenta)
-                    ) {
-                        Text(text = "ÖNCEKİ")
-                    }
-
-                    Button(onClick = {
-                        viewModel.updateQuizStatus(true)
-
-                        navController.popBackStack()
-                        navController.navigate(Screen.Main.Quiz.Result.route)
-                    }, colors = ButtonDefaults.buttonColors(containerColor = Color.Green)) {
-                        Text(text = "BİTİR")
-                    }
-
-                    Button(
-                        onClick = { /*TODO*/ },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color.Yellow)
-                    ) {
-                        Text(text = "SONRAKİ")
+            Button(
+                onClick = {
+                    scope.launch {
+                        if (pagerState.currentPage < questions.size - 1) pagerState.animateScrollToPage(
+                            pagerState.currentPage + 1
+                        )
+                        Log.d(TAG, questions[pagerState.currentPage].toString())
                     }
                 }
+            ) {
+                Text(text = "İleri")
             }
         }
     }
@@ -276,18 +269,15 @@ fun QuestionSection(
 
 @Composable
 fun QuestionComponent(
-    question: String,
-    options: List<String>,
-    onOptionSelected: (String) -> Unit
+    question: Question,
+    onOptionSelected: (Int) -> Unit
 ) {
     Column(
-        modifier = Modifier
-            .padding(16.dp)
-            .background(Color.Red),
+        modifier = Modifier.padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = question,
+            text = question.questionTerm ?: "",
             style = MaterialTheme.typography.headlineLarge,
             textAlign = TextAlign.Center,
             fontFamily = FontFamily(Font(R.font.acherus_grotesque)),
@@ -295,47 +285,38 @@ fun QuestionComponent(
                 .padding(bottom = 16.dp)
                 .fillMaxWidth()
         )
-        options.forEach { option ->
-
-            AnimatedVisibility(
-                visible = true,
-                enter = slideInVertically(
-                    initialOffsetY = { it }
-                ) + expandVertically(
-                    expandFrom = Alignment.Top
-                ) + fadeIn()
-            ) {
-                OptionItem(
-                    option = option,
-                    onOptionSelected = { onOptionSelected(it) }
-                )
-            }
+        question.options?.forEachIndexed { index, option ->
+            OptionItem(
+                optionTitle = option,
+                isSelected = index == question.selectedOptionIndex,
+                onOptionSelected = { onOptionSelected(index) }
+            )
             Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun OptionItem(option: String, onOptionSelected: (String) -> Unit) {
+fun OptionItem(
+    optionTitle: String,
+    isSelected: Boolean = false,
+    onOptionSelected: () -> Unit
+) {
     Card(
-        shape = CardDefaults.outlinedShape,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSecondaryContainer),
-        modifier = Modifier.fillMaxWidth(),
-        onClick = { onOptionSelected(option) }
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onOptionSelected() }
+            .padding(8.dp),
+        shape = MaterialTheme.shapes.medium,
+        colors = CardDefaults.cardColors(
+            containerColor = if (isSelected) Color.Gray else Color.Transparent
+        ),
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            horizontalArrangement = Arrangement.Center
-        ) {
-            Text(
-                text = option,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(8.dp)
-            )
-        }
+        Text(
+            text = optionTitle,
+            modifier = Modifier.padding(16.dp),
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Normal
+        )
     }
 }
