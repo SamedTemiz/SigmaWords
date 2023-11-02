@@ -21,7 +21,7 @@ class WordRepositoryImp(
 ) : WordRepository {
     private val TAG = "WordRepository"
 
-    override fun getAllWords(result: MutableLiveData<List<Word>>, wordsListName: String) {
+    override fun getWords(result: MutableLiveData<List<Word>>, wordsListName: String) {
         database
             .collection("AppDatabase")
             .document("Words")
@@ -34,18 +34,9 @@ class WordRepositoryImp(
                     words.add(word)
                 }
 
-                // Geldiğimiz yere result yolluyoruz
-//                result.invoke(
-//                    UiState.Success(words)
-//                )
                 result.postValue(words)
             }
             .addOnFailureListener {
-//                result.invoke(
-//                    UiState.Failure(
-//                        it.localizedMessage
-//                    )
-//                )
                 result.postValue(null)
             }
     }

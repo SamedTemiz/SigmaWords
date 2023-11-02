@@ -26,7 +26,8 @@ sealed class Screen(
         object Quiz : Screen(route = "quiz", title = "Quiz"){
             object Start: Screen(route = "start", title = "Start")
             object DailyQuiz: Screen(route = "dailyQuiz", title = "Daily Quiz")
-            object Celebration: Screen(route = "celebration", title = "Celebration")
+            object AlreadySolved: Screen(route = "alreadySolved", "Quiz Already Solved")
+            object Result: Screen(route = "result", "Result")
         }
 
 

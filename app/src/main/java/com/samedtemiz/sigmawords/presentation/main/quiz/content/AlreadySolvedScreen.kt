@@ -26,9 +26,7 @@ import com.airbnb.lottie.compose.rememberLottieComposition
 import com.samedtemiz.sigmawords.R
 
 @Composable
-fun CelebrationScreen(
-    navController: NavController
-) {
+fun AlreadySolvedScreen(){
     val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.celebrate))
 
     Column(

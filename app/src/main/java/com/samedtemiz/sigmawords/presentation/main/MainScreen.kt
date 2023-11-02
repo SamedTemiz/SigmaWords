@@ -110,6 +110,8 @@ fun MainScreen(
             }
         }
     ) {
+        // ViewModels
+        val quizViewModel: QuizViewModel = hiltViewModel()
 
         Box(
             modifier = Modifier
@@ -123,17 +125,22 @@ fun MainScreen(
             ) {
                 composable(Screen.Main.Home.route) {
                     // Home Screen
+                    selectedIndex = NavigationBarItems.Home.ordinal
+
                     HomeScreen()
                 }
 
                 composable(Screen.Main.Quiz.route) {
                     // Quiz Screen
-                    val quizViewModel: QuizViewModel = hiltViewModel()
+                    selectedIndex = NavigationBarItems.Quiz.ordinal
+
                     QuizScreen(viewModel = quizViewModel)
                 }
 
                 composable(Screen.Main.Profile.route) {
                     // Profile Screen
+                    selectedIndex = NavigationBarItems.Profile.ordinal
+
                     val userData = remember { googleAuthUiClient.getSignedInUser() }
 
                     var signOutTrigger by remember { mutableStateOf(false) }
@@ -201,6 +208,7 @@ fun Modifier.noRippleClickable(onClick: () -> Unit): Modifier = composed {
         onClick()
     }
 }
+
 
 @Composable
 inline fun <reified T : ViewModel> NavBackStackEntry.sharedViewModel(navController: NavController): T {
