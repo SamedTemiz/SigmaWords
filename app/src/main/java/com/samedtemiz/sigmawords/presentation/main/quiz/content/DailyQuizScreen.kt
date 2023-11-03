@@ -1,20 +1,13 @@
 package com.samedtemiz.sigmawords.presentation.main.quiz.content
 
 import android.util.Log
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -23,21 +16,24 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -55,13 +51,13 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.samedtemiz.sigmawords.R
 import com.samedtemiz.sigmawords.data.model.Question
-import com.samedtemiz.sigmawords.data.model.Quiz
 import com.samedtemiz.sigmawords.presentation.Screen
 import com.samedtemiz.sigmawords.presentation.main.quiz.QuizViewModel
 import com.samedtemiz.sigmawords.util.UiState
 import kotlinx.coroutines.launch
 
 private const val TAG = "DailyQuiz"
+
 @Composable
 fun DailyQuizScreen(
     viewModel: QuizViewModel,
@@ -69,7 +65,6 @@ fun DailyQuizScreen(
 ) {
     val quizState by viewModel.quiz.observeAsState()
 
-    var progress by remember { mutableStateOf(0f) }
     Column(
         modifier = Modifier
             .fillMaxSize(),
@@ -88,20 +83,24 @@ fun DailyQuizScreen(
                 }
 
                 is UiState.Success -> {
-                    val currentQuestionIndex = 1 // Şu anki soru indeksi
                     val totalQuestionsCount = data.questions!!.size // Toplam soru sayısı
-                    progress = animateFloatAsState(
-                        targetValue = (currentQuestionIndex.toFloat() * 100 / totalQuestionsCount) / 100,
-                        label = ""
-                    ).value
+                    var currentQuestionIndex by remember { mutableIntStateOf(1) }
 
                     TopProgress(
-                        questionIndex = currentQuestionIndex,
-                        totalQuestionsCount = totalQuestionsCount,
-                        progress = progress
+                        currentQuestionIndex = currentQuestionIndex,
+                        totalQuestionsCount = totalQuestionsCount
                     )
 
-                    QuizSection(questions = data.questions)
+                    QuizSection(
+                        questions = data.questions,
+                        progress = { value ->
+                            currentQuestionIndex = value
+                        },
+                        result = {
+                            navController.popBackStack()
+                            navController.navigate(Screen.Main.Quiz.Result.route)
+                        }
+                    )
                 }
             }
         }
@@ -110,10 +109,19 @@ fun DailyQuizScreen(
 
 @Composable
 fun TopProgress(
-    questionIndex: Int,
-    totalQuestionsCount: Int,
-    progress: Float
+    currentQuestionIndex: Int,
+    totalQuestionsCount: Int
 ) {
+    var progress by remember { mutableFloatStateOf(currentQuestionIndex.toFloat() / totalQuestionsCount) }
+    val animatedProgress by animateFloatAsState(
+        targetValue = progress,
+        label = ""
+    )
+
+    LaunchedEffect(currentQuestionIndex, totalQuestionsCount) {
+        progress = currentQuestionIndex.toFloat() / totalQuestionsCount
+    }
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween,
@@ -142,7 +150,7 @@ fun TopProgress(
                     fontFamily = FontFamily(Font(R.font.acherus_grotesque))
                 )
 
-                Card(shape = RoundedCornerShape(5.dp), modifier = Modifier.size(70.dp, 30.dp)) {
+                Card(shape = RoundedCornerShape(6.dp), modifier = Modifier.size(70.dp, 30.dp)) {
                     Box(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier.fillMaxSize()
@@ -155,7 +163,7 @@ fun TopProgress(
                     }
                 }
 
-                Card(shape = RoundedCornerShape(5.dp), modifier = Modifier.size(70.dp, 30.dp)) {
+                Card(shape = RoundedCornerShape(6.dp), modifier = Modifier.size(70.dp, 30.dp)) {
                     Box(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier.fillMaxSize()
@@ -175,7 +183,7 @@ fun TopProgress(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(10.dp, 0.dp, 10.dp, 10.dp)
+                .padding(horizontal = 10.dp)
         ) {
             Column(
                 horizontalAlignment = Alignment.Start,
@@ -183,12 +191,13 @@ fun TopProgress(
                 modifier = Modifier.fillMaxSize()
             ) {
                 Text(
-                    text = "Question ${questionIndex} of ${totalQuestionsCount}",
+                    text = "Question $currentQuestionIndex of $totalQuestionsCount",
                     fontSize = 18.sp,
                     fontFamily = FontFamily(Font(R.font.acherus_grotesque))
                 )
+
                 LinearProgressIndicator(
-                    progress = progress,
+                    progress = animatedProgress,
                     modifier = Modifier
                         .height(20.dp)
                         .fillMaxWidth()
@@ -201,12 +210,21 @@ fun TopProgress(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun QuizSection(questions: List<Question>) {
+fun QuizSection(
+    questions: List<Question>,
+    progress: (Int) -> Unit,
+    result: () -> Unit
+) {
+    var selectedOption by remember { mutableStateOf("") }
     var isDone by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
     Column(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(10.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         val pagerState = rememberPagerState(
             initialPage = 0,
@@ -217,106 +235,124 @@ fun QuizSection(questions: List<Question>) {
         HorizontalPager(
             state = pagerState,
             userScrollEnabled = false,
-            modifier = Modifier.weight(1f),
         ) { page ->
             val question = questions[page]
-            QuestionComponent(question = question) { index ->
-                question.selectedOptionIndex = index
-            }
-        }
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Button(
-                onClick = {
-                    scope.launch {
-                        if (pagerState.currentPage > 0) pagerState.animateScrollToPage(pagerState.currentPage - 1)
-                        Log.d(TAG, questions[pagerState.currentPage].toString())
-                    }
-                }
+            Column(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(5.dp)),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(text = "Geri")
-            }
 
-            if (isDone) {
-                Button(
-                    onClick = {}
+                Card(
+                    shape = CardDefaults.elevatedShape,
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 20.dp)
                 ) {
-                    Text(text = "Bitir")
+                    Text(
+                        text = question.questionTerm ?: "",
+                        style = MaterialTheme.typography.headlineLarge,
+                        textAlign = TextAlign.Center,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontFamily = FontFamily(Font(R.font.acherus_grotesque)),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(10.dp)
+                    )
                 }
-            }
 
-            Button(
-                onClick = {
-                    scope.launch {
-                        if (pagerState.currentPage < questions.size - 1) pagerState.animateScrollToPage(
-                            pagerState.currentPage + 1
+                question.options?.forEachIndexed { index, option ->
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 20.dp),
+                        shape = CardDefaults.elevatedShape,
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface),
+                        colors = CardDefaults.cardColors(
+                            containerColor = if (option == selectedOption) MaterialTheme.colorScheme.primaryContainer else Color.Transparent,
+                            contentColor = if (option == selectedOption) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
                         )
-                        Log.d(TAG, questions[pagerState.currentPage].toString())
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .selectable(
+                                    selected = (option == selectedOption),
+                                    onClick = {
+                                        selectedOption = option
+                                        question.selectedOptionIndex = index
+                                        Log.d(TAG, "SEÇİLEN: $index")
+                                    }
+                                )
+                                .padding(10.dp)
+                        ) {
+                            RadioButton(
+                                selected = (option == selectedOption),
+                                onClick = {
+                                    selectedOption = option
+                                    question.selectedOptionIndex = index
+                                },
+                                colors = RadioButtonDefaults.colors(
+                                    selectedColor = MaterialTheme.colorScheme.primary,
+                                    unselectedColor = MaterialTheme.colorScheme.onSurface
+                                )
+                            )
+                            Text(
+                                text = option,
+                                fontSize = 18.sp,
+                                modifier = Modifier
+                                    .padding(start = 16.dp)
+                                    .align(Alignment.CenterVertically)
+                            )
+                        }
                     }
+
                 }
+            }
+
+        }
+
+        Box(
+            contentAlignment = Alignment.CenterEnd,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            isDone = pagerState.currentPage >= questions.size - 1
+            ElevatedButton(
+                onClick = {
+                    if (isDone) {
+                        result()
+                        Log.d(TAG, "Quiz tamamlandı.")
+                    } else {
+                        scope.launch {
+                            if (pagerState.currentPage < questions.size - 1) {
+                                pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                            }
+                        }
+
+                        progress(pagerState.currentPage+2)
+                    }
+                    selectedOption = ""
+                },
+                enabled = selectedOption.isNotBlank() || pagerState.currentPage >= questions.size,
+                shape = RoundedCornerShape(5.dp),
+                colors = ButtonDefaults.elevatedButtonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                )
             ) {
-                Text(text = "İleri")
+                Text(
+                    if (pagerState.currentPage < questions.size - 1) "Sonraki" else "Bitir",
+                    fontSize = 18.sp
+                )
             }
         }
     }
 }
 
-@Composable
-fun QuestionComponent(
-    question: Question,
-    onOptionSelected: (Int) -> Unit
-) {
-    Column(
-        modifier = Modifier.padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = question.questionTerm ?: "",
-            style = MaterialTheme.typography.headlineLarge,
-            textAlign = TextAlign.Center,
-            fontFamily = FontFamily(Font(R.font.acherus_grotesque)),
-            modifier = Modifier
-                .padding(bottom = 16.dp)
-                .fillMaxWidth()
-        )
-        question.options?.forEachIndexed { index, option ->
-            OptionItem(
-                optionTitle = option,
-                isSelected = index == question.selectedOptionIndex,
-                onOptionSelected = { onOptionSelected(index) }
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-    }
-}
 
-@Composable
-fun OptionItem(
-    optionTitle: String,
-    isSelected: Boolean = false,
-    onOptionSelected: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onOptionSelected() }
-            .padding(8.dp),
-        shape = MaterialTheme.shapes.medium,
-        colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) Color.Gray else Color.Transparent
-        ),
-    ) {
-        Text(
-            text = optionTitle,
-            modifier = Modifier.padding(16.dp),
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Normal
-        )
-    }
-}
