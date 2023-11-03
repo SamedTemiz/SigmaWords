@@ -111,8 +111,7 @@ fun MainScreen(
             }
         }
     ) {
-        // ViewModels
-        val quizViewModel: QuizViewModel = hiltViewModel()
+
 
         Box(
             modifier = Modifier
@@ -134,7 +133,8 @@ fun MainScreen(
                 composable(Screen.Main.Quiz.route) {
                     // Quiz Screen
                     selectedIndex = NavigationBarItems.Quiz.ordinal
-
+                    // ViewModels
+                    val quizViewModel: QuizViewModel = hiltViewModel()
                     QuizScreen(viewModel = quizViewModel)
                 }
 

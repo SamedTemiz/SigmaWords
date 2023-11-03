@@ -1,7 +1,6 @@
 package com.samedtemiz.sigmawords.presentation.main.quiz
 
 import android.util.Log
-import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -15,6 +14,8 @@ import com.samedtemiz.sigmawords.data.repository.user.UserRepository
 import com.samedtemiz.sigmawords.data.repository.word.WordRepository
 import com.samedtemiz.sigmawords.util.Constant.CURRENT_DATE
 import com.samedtemiz.sigmawords.util.UiState
+import com.samedtemiz.sigmawords.data.model.Result
+import com.samedtemiz.sigmawords.presentation.main.quiz.extensions.calculateResultSummary
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -37,30 +38,37 @@ class QuizViewModel @Inject constructor(
     private val _isSolved = MutableLiveData<Boolean>()
     val isSolved: LiveData<Boolean> = _isSolved
 
+    private val _result = MutableLiveData<UiState<Result>>()
+    val result: LiveData<UiState<Result>> = _result
+
     init {
         _quiz.observeForever { quizValue ->
             when (quizValue) {
                 is UiState.Success -> {
-                    checkIsQuizSolved(quizValue.data)
+                    if (quizValue.data.solved != null) {
+                        _isSolved.value = quizValue.data.solved ?: false
+                    } else {
+                        getNewQuiz()
+                    }
+
+                    if (quizValue.data.solved == true) {
+                        viewModelScope.launch {
+                            userRepository.getResult(userId, quizValue.data.quizId!!, _result)
+                        }
+                    }
                 }
+
                 is UiState.Failure -> {
                     Log.d(TAG, quizValue.error.toString())
                     getNewQuiz()
                 }
+
                 else -> getNewQuiz()
             }
         }
 
         viewModelScope.launch {
             userRepository.getQuiz(userId, _quiz)
-        }
-    }
-
-    private fun checkIsQuizSolved(quiz: Quiz) {
-        if (quiz.solved != null) {
-            _isSolved.value = quiz.solved!!
-        } else {
-            getNewQuiz()
         }
     }
 
@@ -81,18 +89,14 @@ class QuizViewModel @Inject constructor(
             _quiz.value = UiState.Success(quiz)
             _isSolved.value = false
 
-            userRepository.addQuiz(userId, quiz)
+            viewModelScope.launch{
+                userRepository.addQuiz(userId, quiz)
+            }
             Log.d(TAG, "Quiz oluşturuldu.")
         }
     }
 
-
-
-
-    private fun createQuestionsFromWords(
-        words: List<Word>,
-        numberOfQuestions: Int
-    ): List<Question> {
+    private fun createQuestionsFromWords(words: List<Word>, numberOfQuestions: Int): List<Question> {
         val questions = mutableListOf<Question>()
         val selectedWords = mutableListOf<Word>()
 
@@ -100,7 +104,6 @@ class QuizViewModel @Inject constructor(
             val selectedWord = words.random()
             if (selectedWord !in selectedWords) {
                 selectedWords.add(selectedWord)
-                val question = selectedWord.term
                 val correctAnswer = selectedWord.meaning
 
                 val options = mutableListOf<String>()
@@ -120,7 +123,7 @@ class QuizViewModel @Inject constructor(
 
                 val questionObject = Question(
                     id = selectedWord.id ?: "",
-                    questionTerm = question ?: "",
+                    questionWord = selectedWord,
                     options = options,
                     correctOptionIndex = shuffledCorrectOptionIndex
                 )
@@ -134,21 +137,46 @@ class QuizViewModel @Inject constructor(
     }
 
     private fun getWords(wordsListName: String) {
-        wordRepository.getWords(
-            result = _words,
-            wordsListName = wordsListName
-        )
+        viewModelScope.launch {
+            wordRepository.getWords(
+                result = _words,
+                wordsListName = wordsListName
+            )
+        }
+
         Log.d(TAG, "Kelime listesi yüklendi")
     }
 
-    fun updateQuizStatus(isSolved: Boolean) {
-        // İşlemler yapıldıktan sonra isSolved değeri true olarak güncellenir
-        userRepository.updateQuiz(
-            userId = userId,
-            solved = isSolved
-        )
-        _isSolved.postValue(isSolved) // LiveData'yı güncelliyoruz
-
+    private fun updateQuizStatus(quiz: Quiz) {
+        // İşlemler yapıldıktan sonra quiz verisi güncelliyoruz
+        viewModelScope.launch {
+            userRepository.updateQuiz(
+                userId = userId,
+                quiz = quiz
+            )
+        }
         Log.d(TAG, "Quiz solved durumu değiştirildi: $isSolved")
+    }
+
+    fun createResult(data: Quiz) {
+        val quizId = data.quizId
+        val resultSummary =
+            calculateResultSummary(data.questions ?: emptyList())
+
+        val result = Result(
+            quizId = quizId,
+            questionCount = resultSummary.questionCount,
+            correctCount = resultSummary.correctCount,
+            wrongAnswers = resultSummary.wrongAnswers
+        )
+
+        viewModelScope.launch {
+            data.result = result
+            data.solved = true
+            updateQuizStatus(data)
+            _result.value = UiState.Success(result)
+
+            userRepository.addResult(userId = userId, result = result)
+        }
     }
 }

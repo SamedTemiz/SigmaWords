@@ -26,7 +26,6 @@ fun QuizScreen(
     navController: NavHostController = rememberNavController(),
 ) {
     val isSolved by viewModel.isSolved.observeAsState()
-
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -47,7 +46,7 @@ fun QuizScreen(
                 }
 
                 composable(Screen.Main.Quiz.AlreadySolved.route) {
-                    AlreadySolvedScreen()
+                    AlreadySolvedScreen(navController)
                 }
 
                 composable(Screen.Main.Quiz.DailyQuiz.route) {
