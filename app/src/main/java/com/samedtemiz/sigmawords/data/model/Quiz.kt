@@ -1,12 +1,10 @@
 package com.samedtemiz.sigmawords.data.model
 
-import com.samedtemiz.sigmawords.util.Constant.CURRENT_DATE
-import java.time.LocalDateTime
-
 data class Quiz(
+    val quizId: String? = "",
     val questions: List<Question>? = listOf(),
     val date: String? = "",
-    val result: Result? = null,
-    val solved: Boolean? = false
+    var result: Result? = null,
+    var solved: Boolean? = false
 )
 

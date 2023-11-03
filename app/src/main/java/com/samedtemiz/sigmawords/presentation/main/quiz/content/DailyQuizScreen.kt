@@ -18,6 +18,8 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -65,6 +67,8 @@ fun DailyQuizScreen(
 ) {
     val quizState by viewModel.quiz.observeAsState()
 
+    var showResultDialog by remember { mutableStateOf(false) }
+
     Column(
         modifier = Modifier
             .fillMaxSize(),
@@ -97,12 +101,32 @@ fun DailyQuizScreen(
                             currentQuestionIndex = value
                         },
                         result = {
-                            navController.popBackStack()
-                            navController.navigate(Screen.Main.Quiz.Result.route)
+                            viewModel.createResult(data)
+                            showResultDialog = true
                         }
                     )
                 }
             }
+        }
+
+        if(showResultDialog){
+            AlertDialog(
+                onDismissRequest = { showResultDialog = false },
+                title = { Text("Tebrikler") },
+                text = { Text("Günlük test tamamlandı. Her gün düzenli olarak testlere katılman çok önemli. Şimdi sonucu öğren!") },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            showResultDialog = false
+
+                            navController.popBackStack()
+                            navController.navigate(Screen.Main.Quiz.Result.route)
+                        }
+                    ) {
+                        Text("Sonuç")
+                    }
+                }
+            )
         }
     }
 }
@@ -255,7 +279,7 @@ fun QuizSection(
                         .padding(bottom = 20.dp)
                 ) {
                     Text(
-                        text = question.questionTerm ?: "",
+                        text = question.questionWord?.term ?: "",
                         style = MaterialTheme.typography.headlineLarge,
                         textAlign = TextAlign.Center,
                         fontWeight = FontWeight.Bold,
@@ -354,5 +378,7 @@ fun QuizSection(
         }
     }
 }
+
+
 
 
