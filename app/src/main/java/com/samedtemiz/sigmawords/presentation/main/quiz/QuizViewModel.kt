@@ -1,6 +1,7 @@
 package com.samedtemiz.sigmawords.presentation.main.quiz
 
 import android.util.Log
+import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -57,7 +58,7 @@ class QuizViewModel @Inject constructor(
 
     private fun checkIsQuizSolved(quiz: Quiz) {
         if (quiz.solved != null) {
-            _isSolved.value = quiz.solved ?: false
+            _isSolved.value = quiz.solved!!
         } else {
             getNewQuiz()
         }

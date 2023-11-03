@@ -95,6 +95,7 @@ fun MainScreen(
                             .noRippleClickable {
                                 selectedIndex = item.ordinal
 
+                                navController.popBackStack()
                                 navController.navigate(item.route)
                             },
                         contentAlignment = Alignment.Center
