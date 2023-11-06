@@ -16,7 +16,9 @@ import com.samedtemiz.sigmawords.util.Constant.CURRENT_DATE
 import com.samedtemiz.sigmawords.util.UiState
 import com.samedtemiz.sigmawords.data.model.Result
 import com.samedtemiz.sigmawords.presentation.main.quiz.extensions.calculateResultSummary
+import com.samedtemiz.sigmawords.util.Options
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -44,26 +46,28 @@ class QuizViewModel @Inject constructor(
     init {
         _quiz.observeForever { quizValue ->
             when (quizValue) {
-                is UiState.Success -> {
-                    if (quizValue.data.solved != null) {
-                        _isSolved.value = quizValue.data.solved ?: false
-                    } else {
-                        getNewQuiz()
-                    }
-
-                    if (quizValue.data.solved == true) {
-                        viewModelScope.launch {
-                            userRepository.getResult(userId, quizValue.data.quizId!!, _result)
-                        }
-                    }
+                is UiState.Loading -> {
+                    Log.d(TAG, "Quiz verisi yükleniyor...")
                 }
 
                 is UiState.Failure -> {
                     Log.d(TAG, quizValue.error.toString())
-                    getNewQuiz()
+
+                    getWords(Options.A1.get.toString())
+                    createNewQuiz()
                 }
 
-                else -> getNewQuiz()
+                is UiState.Success -> {
+                    _isSolved.postValue(quizValue.data.solved ?: false)
+                    userRepository.getCurrentResult(
+                        userId = userId,
+                        quizId = quizValue.data.quizId ?: "",
+                        result = _result
+                    )
+
+                    Log.d(TAG, "Quiz verisi alındı.")
+                    Log.d(TAG, quizValue.data.toString())
+                }
             }
         }
 
@@ -72,27 +76,29 @@ class QuizViewModel @Inject constructor(
         }
     }
 
-    private fun getNewQuiz() {
-        val wordsListName = "A1"
-        getWords(wordsListName)
+    private fun createNewQuiz() {
+        _words.observeForever { wordList ->
+            if(wordList.isNotEmpty()){
+                val questions = createQuestionsFromWords(wordList, Options.QUESTION_COUNT.get as Int)
+                val quiz = Quiz(
+                    quizId = "",
+                    questions = questions,
+                    date = CURRENT_DATE,
+                    result = null,
+                    solved = false
+                )
 
-        words.observeForever { wordList ->
-            val questions = createQuestionsFromWords(wordList, 5)
-            val quiz = Quiz(
-                questions = questions,
-                date = CURRENT_DATE,
-                result = null,
-                solved = false
-            )
+                viewModelScope.launch {
+                    userRepository.addQuiz(userId, quiz)
+                    Log.d(TAG, "2 saniye delay uygulanıyor.")
+                    delay(2000)
+                    userRepository.getQuiz(userId, _quiz)
+                }
 
-            // Eğer aynı tarihte quiz yoksa, oluşturulan quiz'i Success durumu içinde LiveData'ya atıyoruz
-            _quiz.value = UiState.Success(quiz)
-            _isSolved.value = false
-
-            viewModelScope.launch{
-                userRepository.addQuiz(userId, quiz)
+                Log.d(TAG, "Quiz oluşturuldu.")
+            }else{
+                Log.d(TAG, "Kelime listesi boş.")
             }
-            Log.d(TAG, "Quiz oluşturuldu.")
         }
     }
 
@@ -109,7 +115,7 @@ class QuizViewModel @Inject constructor(
                 val options = mutableListOf<String>()
                 options.add(correctAnswer ?: "")
 
-                while (options.size < 4) {
+                while (options.size < Options.OPTIONS_COUNT.get as Int) {
                     val randomOption = words.random().meaning
                     if (randomOption !in options) {
                         options.add(randomOption ?: "")
@@ -119,8 +125,6 @@ class QuizViewModel @Inject constructor(
                 options.shuffle()
 
                 val shuffledCorrectOptionIndex = options.indexOf(correctAnswer)
-                Log.d(TAG, shuffledCorrectOptionIndex.toString())
-
                 val questionObject = Question(
                     id = selectedWord.id ?: "",
                     questionWord = selectedWord,
@@ -147,24 +151,14 @@ class QuizViewModel @Inject constructor(
         Log.d(TAG, "Kelime listesi yüklendi")
     }
 
-    private fun updateQuizStatus(quiz: Quiz) {
-        // İşlemler yapıldıktan sonra quiz verisi güncelliyoruz
-        viewModelScope.launch {
-            userRepository.updateQuiz(
-                userId = userId,
-                quiz = quiz
-            )
-        }
-        Log.d(TAG, "Quiz solved durumu değiştirildi: $isSolved")
-    }
-
     fun createResult(data: Quiz) {
         val quizId = data.quizId
-        val resultSummary =
-            calculateResultSummary(data.questions ?: emptyList())
+        val resultDate = data.date
+        val resultSummary = calculateResultSummary(data.questions ?: emptyList())
 
         val result = Result(
             quizId = quizId,
+            resultDate = resultDate,
             questionCount = resultSummary.questionCount,
             correctCount = resultSummary.correctCount,
             wrongAnswers = resultSummary.wrongAnswers
@@ -173,10 +167,14 @@ class QuizViewModel @Inject constructor(
         viewModelScope.launch {
             data.result = result
             data.solved = true
-            updateQuizStatus(data)
-            _result.value = UiState.Success(result)
 
+            _result.postValue(UiState.Success(result))
+            Log.d(TAG, "Result oluşturuldu.")
+
+            userRepository.updateQuiz(userId = userId, quiz = data)
             userRepository.addResult(userId = userId, result = result)
+
+            Log.d(TAG, "Quiz solved durumu değiştirildi.")
         }
     }
 }

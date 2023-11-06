@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.toObject
+import com.samedtemiz.sigmawords.data.model.Question
 import com.samedtemiz.sigmawords.data.model.Quiz
 import com.samedtemiz.sigmawords.data.model.Result
 import com.samedtemiz.sigmawords.data.model.User
@@ -29,16 +30,15 @@ class UserRepositoryImp(
                         val quizData = document.toObject<Quiz>()
                         quiz.postValue(UiState.Success(quizData))
                     }
-                    Log.w(TAG, "Quiz verisi alındı.")
                 } else {
                     quiz.postValue(UiState.Failure("Quiz bulunamadı."))
-                    Log.w(TAG, "Quiz verisi alınamadı.")
                 }
             }
             .addOnFailureListener { exception ->
-                Log.w(TAG, "Failure: ", exception)
+                Log.w(TAG, "Quiz alınırken hata: ", exception)
             }
     }
+
     override fun addQuiz(userId: String, quiz: Quiz) {
         val quizzesCollection =
             database.collection("UserDatabase").document(userId).collection("Quizzes")
@@ -49,22 +49,28 @@ class UserRepositoryImp(
                 val updatedQuiz = quiz.copy(quizId = quizId) // quizId değerini güncelleyin
                 quizzesCollection.document(quizId)
                     .set(updatedQuiz) // Güncellenmiş quiz'i belgeye yazın
-
                 Log.d(TAG, "Quiz eklendi: ${documentReference.id}")
             }
             .addOnFailureListener { e ->
                 Log.w(TAG, "Quiz eklenirken hata oluştu", e)
             }
     }
+
     override fun updateQuiz(userId: String, quiz: Quiz) {
+        Log.d(TAG, "4 -> " + quiz.quizId.toString())
         val quizzesCollection =
             database.collection("UserDatabase").document(userId).collection("Quizzes")
 
         val quizId = quiz.quizId // Quiz'in kimlik bilgisini al
 
-        quizzesCollection.document(quizId!!).set(quiz) // Quiz'i belgeye yaz
-
-        Log.d(TAG, "Quiz güncellendi: $quizId")
+        quizzesCollection.document(quizId!!)
+            .set(quiz)
+            .addOnSuccessListener {
+                Log.d(TAG, "Quiz güncellendi: $quizId")
+            }
+            .addOnFailureListener{
+                Log.d(TAG, "Quiz güncelleme hatası: "+it.localizedMessage)
+            }
     }
 
 
@@ -81,22 +87,25 @@ class UserRepositoryImp(
                 Log.w(TAG, "Result eklenirken hata:", e)
             }
     }
-    override fun getResult(userId: String, quizId: String, result: MutableLiveData<UiState<Result>>) {
+
+    override fun getCurrentResult(
+        userId: String,
+        quizId: String,
+        result: MutableLiveData<UiState<Result>>
+    ) {
         val quizzesCollection =
             database.collection("UserDatabase").document(userId).collection("Results")
 
         quizzesCollection.whereEqualTo("quizId", quizId)
             .get()
             .addOnSuccessListener { documents ->
-                if(!documents.isEmpty){
-                    for(document in documents){
+                if (!documents.isEmpty) {
+                    for (document in documents) {
                         val resultData = document.toObject<Result>()
-                        result.postValue(UiState.Success(resultData))
+                        result.value = UiState.Success(resultData)
                     }
-                    Log.d(TAG, "Result verisi alındı.")
-                }else {
+                } else {
                     result.postValue(UiState.Failure("Result bulunamadı."))
-                    Log.w(TAG, "Result verisi alınamadı.")
                 }
             }
             .addOnFailureListener { e ->
@@ -104,7 +113,30 @@ class UserRepositoryImp(
             }
     }
 
+    override fun getResultList(userId: String, result: MutableLiveData<UiState<List<Result>>>) {
+        val quizzesCollection =
+            database.collection("UserDatabase").document(userId).collection("Results")
 
+        quizzesCollection
+            .get()
+            .addOnSuccessListener { documents ->
+                if (!documents.isEmpty) {
+                    val resultList = ArrayList<Result>() // Result tutan list
+
+                    for (document in documents) {
+                        val resultData = document.toObject<Result>()
+                        resultList.add(resultData)
+                    }
+
+                    result.postValue(UiState.Success(resultList))
+                } else {
+                    result.postValue(UiState.Failure("Result listesi oluşturuLAMADI."))
+                }
+            }
+            .addOnFailureListener { e ->
+                result.postValue(UiState.Failure("Error getting result: $e"))
+            }
+    }
 
 
     // User Database Operations
@@ -120,13 +152,13 @@ class UserRepositoryImp(
             if (task.isSuccessful) {
                 val document = task.result
                 if (document != null && document.exists()) {
-                    Log.d(TAG, "Document already exists")
+
                 } else {
                     database.collection("UserDatabase")
                         .document(user.userId)
                         .set(userData)
                         .addOnSuccessListener {
-                            Log.d(TAG, "DocumentSnapshot successfully written!")
+                            Log.d(TAG, "Kullanıcı veri tabanı oluşturuldu.")
                         }
                         .addOnFailureListener { e -> Log.w(TAG, "Error writing document", e) }
                 }

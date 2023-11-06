@@ -6,8 +6,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Button
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ElevatedButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -28,7 +32,7 @@ import com.samedtemiz.sigmawords.R
 import com.samedtemiz.sigmawords.presentation.Screen
 
 @Composable
-fun AlreadySolvedScreen(navController: NavController){
+fun AlreadySolvedScreen(navController: NavController) {
     val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.celebrate))
 
     Column(
@@ -52,10 +56,22 @@ fun AlreadySolvedScreen(navController: NavController){
             modifier = Modifier.fillMaxWidth()
         )
 
-        Button(onClick = {
-            navController.navigate(Screen.Main.Quiz.Result.route)
-        }) {
-            Text(text = "RESULT")
+        Spacer(modifier = Modifier.height(20.dp))
+        ElevatedButton(
+            onClick = {
+                navController.navigate(Screen.Main.Quiz.Result.route)
+            },
+            shape = RoundedCornerShape(5.dp),
+            colors = ButtonDefaults.elevatedButtonColors(
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            )
+        ) {
+            Text(
+                text = "Sonuç Ekranı",
+                fontSize = 18.sp,
+                modifier = Modifier.padding(8.dp)
+            )
         }
     }
 }

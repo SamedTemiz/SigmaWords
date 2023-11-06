@@ -1,6 +1,8 @@
 package com.samedtemiz.sigmawords.presentation.activity
 
+import android.content.ContentValues.TAG
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -89,11 +91,13 @@ class MainActivity : ComponentActivity() {
                                     navController = navController,
                                     splashViewModel = splashViewModel
                                 )
+                                Log.d(TAG, "Splash screen")
                             }
 
                             composable(Screen.Welcome.OnBoard.route) {
                                 // OnBoard Screen
                                 OnboardingScreen(navController = navController)
+                                Log.d(TAG, "OnBoarding screen")
                             }
                         }
 
@@ -129,11 +133,7 @@ class MainActivity : ComponentActivity() {
                                 if (state.isSignInSuccessful) {
                                     viewModel.createUserDatabaseIfNotExist(googleAuthUiClient.getSignedInUser()!!)
 
-                                    Toast.makeText(
-                                        applicationContext,
-                                        "Sign in successful",
-                                        Toast.LENGTH_LONG
-                                    ).show()
+                                    Log.d(TAG, "Sign in successful.")
 
                                     navController.popBackStack()
                                     navController.navigate(Screen.Main.route)
@@ -155,6 +155,8 @@ class MainActivity : ComponentActivity() {
                                     }
                                 }
                             )
+
+                            Log.d(TAG, "Sign in screen")
                         }
 
                         // Main
