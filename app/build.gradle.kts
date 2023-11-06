@@ -121,6 +121,9 @@ dependencies {
     // DataStore Preferences
     implementation("androidx.datastore:datastore-preferences:1.0.0")
 
-    //lottie
+    // Lottie Animations
     implementation("com.airbnb.android:lottie-compose:5.2.0")
+
+    // Glide
+    implementation("com.github.bumptech.glide:compose:1.0.0-beta01")
 }

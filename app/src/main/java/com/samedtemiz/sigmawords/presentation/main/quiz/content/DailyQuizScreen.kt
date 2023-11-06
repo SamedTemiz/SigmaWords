@@ -109,7 +109,7 @@ fun DailyQuizScreen(
             }
         }
 
-        if(showResultDialog){
+        if (showResultDialog) {
             AlertDialog(
                 onDismissRequest = { showResultDialog = false },
                 title = { Text("Tebrikler") },
@@ -359,7 +359,7 @@ fun QuizSection(
                             }
                         }
 
-                        progress(pagerState.currentPage+2)
+                        progress(pagerState.currentPage + 2)
                     }
                     selectedOption = ""
                 },

@@ -1,27 +1,54 @@
 package com.samedtemiz.sigmawords.presentation.sign_in
 
 import android.widget.Toast
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.rememberLottieComposition
+import com.samedtemiz.sigmawords.R
 import com.samedtemiz.sigmawords.authentication.SignInState
 
 @Composable
 fun SignInScreen(
     state: SignInState,
     onSignInClick: () -> Unit
-){
+) {
     val context = LocalContext.current
 
-    LaunchedEffect(key1 = state.isSignInError){
+    LaunchedEffect(key1 = state.isSignInError) {
         state.isSignInError?.let { error ->
             Toast.makeText(
                 context,
@@ -36,9 +63,64 @@ fun SignInScreen(
             .fillMaxSize()
             .padding(16.dp),
         contentAlignment = Alignment.Center
-    ){
-        Button(onClick = onSignInClick){
-            Text(text = "Sign in")
+    ) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(0.5f)
+                .padding(horizontal = 16.dp)
+                .shadow(
+                    elevation = 25.dp,
+                    ambientColor = MaterialTheme.colorScheme.primary,
+                    spotColor = MaterialTheme.colorScheme.onBackground,
+                    shape = RoundedCornerShape(20.dp)
+                ),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+            elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Top,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                val composition by rememberLottieComposition(spec = LottieCompositionSpec.RawRes(R.raw.google))
+
+                LottieAnimation(
+                    composition = composition, iterations = 1,
+                    restartOnPlay = false,
+                    isPlaying = true,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(300.dp, 150.dp)
+                        .padding(top = 16.dp)
+                )
+
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp)
+                ) {
+                    Text(
+                        text = "Hoşgeldiniz",
+                        fontSize = 21.sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = FontFamily(Font(R.font.acherus_grotesque)),
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+                    Button(
+                        onClick = { onSignInClick() },
+                        modifier = Modifier
+                            .size(100.dp)
+                            .padding(),  //avoid the oval shape
+                        shape = CircleShape,
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                    ) {
+                        Text(text = "Giriş", fontSize = 20.sp)
+                    }
+                }
+            }
         }
     }
 }

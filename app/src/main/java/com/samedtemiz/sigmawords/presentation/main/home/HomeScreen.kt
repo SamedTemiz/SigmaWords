@@ -1,30 +1,26 @@
 package com.samedtemiz.sigmawords.presentation.main.home
 
-import android.content.res.Configuration.UI_MODE_NIGHT_YES
-import android.util.Log
-import android.widget.Space
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Button
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,20 +35,21 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewmodel.compose.viewModel
+import com.bumptech.glide.Glide
+import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
+import com.bumptech.glide.integration.compose.GlideImage
 import com.samedtemiz.sigmawords.R
-import com.samedtemiz.sigmawords.data.model.Word
-import com.samedtemiz.sigmawords.presentation.ui.theme.SigmaWordsTheme
+import com.samedtemiz.sigmawords.data.model.User
+import com.samedtemiz.sigmawords.presentation.main.home.component.AnimatedShimmer
+import com.samedtemiz.sigmawords.presentation.main.home.component.ExpandableResultCard
 import com.samedtemiz.sigmawords.util.UiState
 
 @Composable
 fun HomeScreen(
-    viewModel: HomeViewModel = hiltViewModel(),
+    viewModel: HomeViewModel,
+    userData: User?
 ) {
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -64,17 +61,19 @@ fun HomeScreen(
                 .padding(15.dp)
         ) {
             Column {
-                HeaderCard()
+                userData?.let { user ->
+                    HeaderSection(user)
+                }
 
-                ContentCard(viewModel)
+                ContentSection(viewModel = viewModel)
             }
         }
     }
-
 }
 
+@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
-fun HeaderCard() {
+fun HeaderSection(user: User) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween,
@@ -101,11 +100,11 @@ fun HeaderCard() {
                         buildAnnotatedString {
                             withStyle(
                                 style = SpanStyle(
-                                    fontSize = 26.sp,
+                                    fontSize = 24.sp,
                                     fontFamily = FontFamily(Font(R.font.acherus_grotesque))
                                 )
                             ) {
-                                append("Hello, ")
+                                append("Merhaba, ")
                             }
                             withStyle(
                                 style = SpanStyle(
@@ -114,26 +113,36 @@ fun HeaderCard() {
                                     fontFamily = FontFamily(Font(R.font.acherus_grotesque))
                                 )
                             ) {
-                                append("Samed")
+                                user.username?.let {
+                                    append(it.split(" ")[0])
+                                } ?: "NO-DATA"
                             }
                         }
                     )
                     Text(
-                        text = "Glad you're back", fontSize = 21.sp,
+                        text = "Geri dönmene sevindim", fontSize = 18.sp,
                         fontFamily = FontFamily(Font(R.font.acherus_grotesque))
                     )
                 }
                 Box(
                     contentAlignment = Alignment.Center,
                 ) {
-                    Image(
-                        painterResource(id = R.drawable.seftali),
-                        contentDescription = "Artist image",
+                    GlideImage(
+                        model = user.profilePictureUrl,
+                        contentDescription = "Google Account Profile Picture",
                         modifier = Modifier
                             .clip(CircleShape)
-                            .size(60.dp),
+                            .size(70.dp),
                         contentScale = ContentScale.FillWidth,
                     )
+//                    Image(
+//                        painterResource(id = R.drawable.seftali),
+//                        contentDescription = "Profile Picture",
+//                        modifier = Modifier
+//                            .clip(CircleShape)
+//                            .size(60.dp),
+//                        contentScale = ContentScale.FillWidth,
+//                    )
                 }
             }
         }
@@ -150,9 +159,10 @@ fun HeaderCard() {
     }
 }
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun ContentCard(viewModel: HomeViewModel) {
-    val sigma = viewModel.sigmaWords.observeAsState()
+fun ContentSection(viewModel: HomeViewModel) {
+    val resultState by viewModel.resultState.observeAsState()
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -161,7 +171,7 @@ fun ContentCard(viewModel: HomeViewModel) {
             .fillMaxSize()
     ) {
         Text(
-            text = "Categories",
+            text = "Sonuçlar",
             fontSize = 21.sp,
             fontFamily = FontFamily(Font(R.font.acherus_grotesque)),
             textAlign = TextAlign.Left,
@@ -173,27 +183,39 @@ fun ContentCard(viewModel: HomeViewModel) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(10.dp)
-                .background(Color.Yellow)
         ) {
-            Column {
-                sigma.value?.let {
+            resultState?.run {
+                when (this) {
+                    is UiState.Loading -> {
+                        Column {
+                            repeat(6) {
+                                AnimatedShimmer()
+                            }
+                        }
+                    }
 
-                    for (word in it) {
+                    is UiState.Failure -> {
+                        Text(text = this.error.toString())
+                    }
 
-                        Text(text = word.term!!, color = Color.Black)
+                    is UiState.Success -> {
+                        LazyColumn(
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                            contentPadding = PaddingValues(
+                                bottom = 24.dp
+                            )
+                        ) {
+                            items(data.size) { index ->
+                                val singleResult = data[index]
+                                ExpandableResultCard(
+                                    title = singleResult.resultDate.toString(),
+                                    wordList = singleResult.wrongAnswers
+                                )
+                            }
+                        }
                     }
                 }
-
             }
         }
-    }
-}
-
-@Preview(showSystemUi = true)
-@Preview(showSystemUi = true, uiMode = UI_MODE_NIGHT_YES)
-@Composable
-fun HomeScreenPreview() {
-    SigmaWordsTheme {
-        HomeScreen()
     }
 }

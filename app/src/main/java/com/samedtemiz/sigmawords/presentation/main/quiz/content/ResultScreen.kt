@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -17,6 +18,7 @@ import com.samedtemiz.sigmawords.presentation.main.quiz.QuizViewModel
 import com.samedtemiz.sigmawords.util.UiState
 
 private const val TAG = "ResultScreen"
+
 @Composable
 fun ResultScreen(viewModel: QuizViewModel) {
     val resultState by viewModel.result.observeAsState()
@@ -27,12 +29,12 @@ fun ResultScreen(viewModel: QuizViewModel) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         resultState?.run {
-            when(this){
+            when (this) {
                 is UiState.Loading -> {
-                    CircularProgressIndicator()
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.onBackground)
                 }
 
-                is UiState.Success ->{
+                is UiState.Success -> {
                     ResultCard(data)
                 }
 
@@ -40,29 +42,27 @@ fun ResultScreen(viewModel: QuizViewModel) {
                     Log.d(TAG, error.toString())
                 }
             }
-        }
+        } ?: Text(text = "DSGSDG")
 
     }
 }
 
 @Composable
-fun ResultCard(result: Result){
+fun ResultCard(result: Result) {
     Column {
         Text(text = result.quizId.toString())
         Text(text = result.questionCount.toString())
         Text(text = result.correctCount.toString())
 
-        LazyColumn() {
-            items(result.wrongAnswers?.size ?: 0) { index ->
-                // Listenin her bir elemanı için gerekli işlemleri gerçekleştir
-                val word = result.wrongAnswers?.get(index)
-                // Örneğin:
-                word?.let {
-                    Text(text = "Question: ${it.term}, Answer: ${it.meaning}")
-                }
+        val wrongAnswers = result.wrongAnswers
+        wrongAnswers?.let { list ->
+            LazyColumn() {
+                items(list.size) { index ->
+                    val word = list[index]
 
+                    Text(text = "Question: ${word.term}, Answer: ${word.meaning}")
+                }
             }
         }
-
     }
 }

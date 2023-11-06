@@ -73,6 +73,7 @@ fun MainScreen(
     googleAuthUiClient: GoogleAuthUiClient
 ) {
     val context = LocalContext.current
+    val userData = remember { googleAuthUiClient.getSignedInUser() }
 
     val navigationBarItems = remember { NavigationBarItems.values() }
     var selectedIndex by remember { mutableIntStateOf(0) }
@@ -127,13 +128,14 @@ fun MainScreen(
                     // Home Screen
                     selectedIndex = NavigationBarItems.Home.ordinal
 
-                    HomeScreen()
+                    val homeViewModel: HomeViewModel = hiltViewModel()
+                    HomeScreen(viewModel = homeViewModel, userData = userData)
                 }
 
                 composable(Screen.Main.Quiz.route) {
                     // Quiz Screen
                     selectedIndex = NavigationBarItems.Quiz.ordinal
-                    // ViewModels
+
                     val quizViewModel: QuizViewModel = hiltViewModel()
                     QuizScreen(viewModel = quizViewModel)
                 }
@@ -142,10 +144,7 @@ fun MainScreen(
                     // Profile Screen
                     selectedIndex = NavigationBarItems.Profile.ordinal
 
-                    val userData = remember { googleAuthUiClient.getSignedInUser() }
-
                     var signOutTrigger by remember { mutableStateOf(false) }
-
                     if (signOutTrigger) {
                         LaunchedEffect(true) {
                             // Coroutine içerisinde çalışacak işlemler
