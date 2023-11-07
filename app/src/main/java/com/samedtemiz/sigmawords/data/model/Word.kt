@@ -6,9 +6,9 @@ data class Word(
     val meaning: String? = "",
     val meaning2: String? = "",
     val meaning3: String? = "",
-    val shownDate: String? = "",
-    val sigmaDate: String? = "",
-    val sigmaLevel: Int? = 0,
-    val success: Int? = 0,
+    var shownDate: String? = "",
+    var sigmaDate: String? = "",
+    var sigmaLevel: Int? = 0,
+    var success: Int? = 0,
     val term: String? = "",
 )
