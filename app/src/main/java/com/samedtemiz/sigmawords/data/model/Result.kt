@@ -6,5 +6,6 @@ data class Result(
     val questionCount: Int? = 0,    // Quiz total soru sayısı
     val correctCount: Int? = 0,     // Quiz doğru cevaplanan soru sayısı
     val sigmaWordCount: Int? = 0,   // Sigma etiketine sahip sorular
-    val wrongAnswers: List<Word>? = listOf(), // Yanlış cevaplanan kelimeler
+    val wrongAnswers: List<Word>? = listOf(),   // Yanlış cevaplanan kelimeler
+    val correctAnswers: List<Word>? = listOf()  // Doğru cevaplanan kelimeler
 )

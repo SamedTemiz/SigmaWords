@@ -39,8 +39,3 @@ fun calculateResultSummary(questions: List<Question>): ResultSummary {
         correctAnswers = correctAnswers
     )
 }
-
-private fun createSigmaWordsList(words: List<Word>): Int {
-    return words.size // Eğer listenin boyutunu almak istiyorsanız, listenin boyutunu döndürebilirsiniz.
-}
-

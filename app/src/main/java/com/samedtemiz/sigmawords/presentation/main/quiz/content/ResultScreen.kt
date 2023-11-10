@@ -16,30 +16,37 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.samedtemiz.sigmawords.data.model.Result
 import com.samedtemiz.sigmawords.presentation.main.quiz.QuizViewModel
+import com.samedtemiz.sigmawords.presentation.main.quiz.extensions.SigmaOperations
 import com.samedtemiz.sigmawords.util.UiState
 
 private const val TAG = "ResultScreen"
 
 @Composable
-fun ResultScreen(resultState: UiState<Result>) {
+fun ResultScreen(viewModel: QuizViewModel) {
+    val resultState by viewModel.result.observeAsState()
+
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        when (resultState) {
-            is UiState.Loading -> {
-                CircularProgressIndicator(color = MaterialTheme.colorScheme.onBackground)
-            }
+        resultState?.let { state ->
+            when (state) {
+                is UiState.Loading -> {
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.onBackground)
+                }
 
-            is UiState.Success -> {
-                Log.d(TAG, "Result verisi alındı.")
-                ResultCard(resultState.data)
-            }
+                is UiState.Success -> {
+                    Log.d(TAG, "Result verisi alındı.")
+                    ResultCard(state.data)
+                }
 
-            is UiState.Failure -> {
-                Log.d(TAG, resultState.error.toString())
+                is UiState.Failure -> {
+                    Log.d(TAG, state.error.toString())
+                }
             }
+        } ?: run {
+            CircularProgressIndicator(color = MaterialTheme.colorScheme.onBackground)
         }
     }
 }

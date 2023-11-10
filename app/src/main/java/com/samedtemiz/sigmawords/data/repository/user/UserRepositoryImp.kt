@@ -33,7 +33,6 @@ class UserRepositoryImp(private val database: FirebaseFirestore) : UserRepositor
                         CoroutineScope(Dispatchers.IO).launch {
                             quiz.postValue(UiState.Success(quizData))
                         }
-
                     }
                 } else {
                     CoroutineScope(Dispatchers.IO).launch {
@@ -51,13 +50,13 @@ class UserRepositoryImp(private val database: FirebaseFirestore) : UserRepositor
             database.collection("UserDatabase").document(userId).collection("Quizzes")
 
         CoroutineScope(Dispatchers.IO).launch {
-            quizzesCollection.add(quiz)
-                .addOnSuccessListener { documentReference ->
-                    val quizId = documentReference.id
-                    val updatedQuiz = quiz.copy(quizId = quizId) // quizId değerini güncelleyin
-                    quizzesCollection.document(quizId)
-                        .set(updatedQuiz) // Güncellenmiş quiz'i belgeye yazın
-                    Log.d(TAG, "Quiz eklendi: ${documentReference.id}")
+            val documentReference = quizzesCollection.document() // Belge eklenmeden önce referans alınır
+            val quizId = documentReference.id // Belge kimliği alınır
+            val quizWithId = quiz.copy(quizId = quizId) // Belgeye quizId değeri eklenir
+
+            documentReference.set(quizWithId)
+                .addOnSuccessListener {
+                    Log.d(TAG, "Quiz eklendi: $quizId")
                 }
                 .addOnFailureListener { e ->
                     Log.w(TAG, "Quiz eklenirken hata oluştu", e)
@@ -65,8 +64,8 @@ class UserRepositoryImp(private val database: FirebaseFirestore) : UserRepositor
         }
     }
 
+
     override fun updateQuiz(userId: String, quiz: Quiz) {
-        Log.d(TAG, "4 -> " + quiz.quizId.toString())
         val quizzesCollection =
             database.collection("UserDatabase").document(userId).collection("Quizzes")
 
@@ -107,7 +106,7 @@ class UserRepositoryImp(private val database: FirebaseFirestore) : UserRepositor
                     }
                 } else {
                     CoroutineScope(Dispatchers.IO).launch {
-                        result.postValue(null)
+                        result.postValue(emptyList())
                     }
                 }
             }
@@ -117,7 +116,27 @@ class UserRepositoryImp(private val database: FirebaseFirestore) : UserRepositor
     }
 
     override fun addSigmaWords(userId: String, sigmaWords: List<Word>) {
-        TODO("Not yet implemented")
+        val wordsCollection =
+            database.collection("UserDatabase").document(userId).collection("SigmaWords")
+        CoroutineScope(Dispatchers.IO).launch {
+            for (word in sigmaWords) {
+                val wordId = word.id ?: ""
+
+                wordsCollection.document(wordId).set(word)
+            }
+        }
+    }
+
+    override fun deleteSigmaWords(userId: String, forDeleteSigmaWords: List<Word>) {
+        val wordsCollection =
+            database.collection("UserDatabase").document(userId).collection("SigmaWords")
+        CoroutineScope(Dispatchers.IO).launch {
+            for (word in forDeleteSigmaWords) {
+                val wordId = word.id ?: ""
+
+                wordsCollection.document(wordId).delete()
+            }
+        }
     }
 
 

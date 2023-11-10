@@ -40,17 +40,18 @@ import com.airbnb.lottie.compose.rememberLottieComposition
 import com.samedtemiz.sigmawords.R
 import com.samedtemiz.sigmawords.presentation.Screen
 import com.samedtemiz.sigmawords.presentation.main.quiz.QuizViewModel
+import com.samedtemiz.sigmawords.util.Options
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StartQuizScreen(
-    viewModel: QuizViewModel,
-    navController: NavHostController
+    navController: NavHostController,
+    questionCount: Int
 ) {
-    val quiz by viewModel.quiz.observeAsState()
-
     val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.solving))
     var displayPopup by remember { mutableStateOf(false) }
+
+    val sigmaCount = questionCount - Options.QUESTION_COUNT.get as Int
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
@@ -114,7 +115,7 @@ fun StartQuizScreen(
 
                     Spacer(modifier = Modifier.width(5.dp))
                     Text(
-                        text = "Soru Sayısı: 15",
+                        text = "Soru Sayısı: $questionCount",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Start,
@@ -143,7 +144,7 @@ fun StartQuizScreen(
 
                     Spacer(modifier = Modifier.width(5.dp))
                     Text(
-                        text = "Sigma: 5",
+                        text = "Sigma: $sigmaCount",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Start,
