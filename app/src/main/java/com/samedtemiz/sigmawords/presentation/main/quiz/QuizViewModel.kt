@@ -1,14 +1,11 @@
 package com.samedtemiz.sigmawords.presentation.main.quiz
 
 import android.util.Log
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
-import com.samedtemiz.sigmawords.authentication.SignInState
 import com.samedtemiz.sigmawords.data.model.Question
 import com.samedtemiz.sigmawords.data.model.Quiz
 import com.samedtemiz.sigmawords.data.model.Word
@@ -17,15 +14,10 @@ import com.samedtemiz.sigmawords.data.repository.word.WordRepository
 import com.samedtemiz.sigmawords.util.Constant.CURRENT_DATE
 import com.samedtemiz.sigmawords.util.UiState
 import com.samedtemiz.sigmawords.data.model.Result
+import com.samedtemiz.sigmawords.presentation.main.quiz.extensions.QuestionCreator
+import com.samedtemiz.sigmawords.presentation.main.quiz.extensions.SigmaOperations
 import com.samedtemiz.sigmawords.presentation.main.quiz.extensions.calculateResultSummary
-import com.samedtemiz.sigmawords.util.Options
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 private const val TAG = "QuizViewModel"
@@ -59,9 +51,11 @@ class QuizViewModel @Inject constructor(
         }
     }
 
+    // Quiz stuff
     fun createQuiz(questionCount: Int) {
         Log.d(TAG, "Yeni quiz oluşturuluyor.")
-
+        _quiz.value = UiState.Loading
+        
         val questions = createQuestions(questionCount = questionCount)
         questions.forEach {
             Log.d(TAG, it.id.toString())
@@ -84,18 +78,21 @@ class QuizViewModel @Inject constructor(
             Log.d(TAG, e.message.toString())
         }
     }
-
     private fun createQuestions(questionCount: Int): List<Question> {
         var regularQuestions: List<Question> = emptyList()
+        var sigmaQuestions: List<Question> = emptyList()
 
-        _words.value?.let { wordList ->
-            val questionCreator = QuestionCreator(wordList)
+        if (_words.value != null && _sigmaWords.value != null) {
+            val questionCreator = QuestionCreator(_words.value!!)
+
             regularQuestions = questionCreator.createRegularQuestions(questionCount)
+            sigmaQuestions = questionCreator.createSigmaQuestions(_sigmaWords.value!!)
         }
 
-        return regularQuestions
+        return regularQuestions + sigmaQuestions
     }
 
+    // Result stuff
     fun createResult(data: Quiz) {
         val quizId = data.quizId
         val resultDate = data.date
@@ -106,7 +103,8 @@ class QuizViewModel @Inject constructor(
             resultDate = resultDate,
             questionCount = resultSummary.questionCount,
             correctCount = resultSummary.correctCount,
-            wrongAnswers = resultSummary.wrongAnswers
+            wrongAnswers = resultSummary.wrongAnswers,
+            correctAnswers = resultSummary.correctAnswers
         )
 
         data.result = result
@@ -116,19 +114,45 @@ class QuizViewModel @Inject constructor(
         try {
             userRepository.updateQuiz(userId = userId, quiz = data)
             userRepository.addResult(userId = userId, result = result)
+
+            addSigmaWords(resultSummary.correctAnswers)
+            deleteSigmaWords(resultSummary.wrongAnswers)
         } catch (e: Exception) {
             Log.d(TAG, e.message.toString())
         }
 
         Log.d(TAG, "Quiz solved durumu değiştirildi.")
     }
-
     fun getCurrentResult(quizId: String) {
         userRepository.getCurrentResult(userId = userId, quizId = quizId, _result)
     }
 
+    // Sigma stuff
+    private fun addSigmaWords(correctAnswers: List<Word>) {
+        val sigmaOperations = SigmaOperations()
+        val sigmaWords = sigmaOperations.calculateSigma(correctAnswers)
+
+        try {
+            userRepository.addSigmaWords(userId = userId, sigmaWords = sigmaWords)
+            Log.d(TAG, "Sigma kelimeleri eklendi.")
+        } catch (e: Exception) {
+            Log.d(TAG, e.message.toString())
+        }
+    }
+    private fun deleteSigmaWords(wrongAnswers: List<Word>) {
+        try {
+            userRepository.deleteSigmaWords(userId = userId, forDeleteSigmaWords = wrongAnswers)
+            Log.d(TAG, "Sigma kelimeleri silindi.")
+        } catch (e: Exception) {
+            Log.d(TAG, e.message.toString())
+        }
+    }
+
+    // Words stuff
     fun fetchWords(wordsListName: String) {
-        Log.d(TAG, "Fetch çalıştı")
+        Log.d(TAG, "Words fetch çalıştı.")
         wordRepository.getWords(_words, wordsListName)
+        Log.d(TAG, "Sigma words fetch çalıştı.")
+        userRepository.getUserSigmaWords(userId = userId, currentDate = CURRENT_DATE, _sigmaWords)
     }
 }

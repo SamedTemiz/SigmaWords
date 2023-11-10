@@ -1,25 +1,24 @@
-package com.samedtemiz.sigmawords.presentation.main.quiz
+package com.samedtemiz.sigmawords.presentation.main.quiz.extensions
 
 import android.util.Log
 import com.samedtemiz.sigmawords.data.model.Question
 import com.samedtemiz.sigmawords.data.model.Word
-import com.samedtemiz.sigmawords.util.Constant.CURRENT_DATE
+import com.samedtemiz.sigmawords.util.Constant
 import com.samedtemiz.sigmawords.util.Options
 
 private const val TAG = "Question Creator"
-
 class QuestionCreator(private val wordsList: List<Word>) {
 
     private val questions = mutableListOf<Question>()
     private val selectedWords = mutableListOf<Word>()
 
     fun createRegularQuestions(questionCount: Int): List<Question> {
-        Log.d(TAG, "Normal sorualar oluşturuluyor.")
+        Log.d(TAG, "Normal sorular oluşturuluyor.")
         repeat(questionCount) {
             val selectedWord = wordsList.filter { it.shownDate == "null" }.randomOrNull()
 
             if (selectedWord != null && selectedWord !in selectedWords) {
-                selectedWord.shownDate = CURRENT_DATE
+                selectedWord.shownDate = Constant.CURRENT_DATE
                 selectedWords.add(selectedWord)
 
                 val options = mutableListOf<String>().apply { add(selectedWord.meaning ?: "") }
@@ -34,7 +33,7 @@ class QuestionCreator(private val wordsList: List<Word>) {
     }
 
     fun createSigmaQuestions(sigmaList: List<Word>): List<Question> {
-        Log.d(TAG, "Sigma sorualr oluşturuluyor.")
+        Log.d(TAG, "Sigma sorular oluşturuluyor.")
         val sigmaQuestions = mutableListOf<Question>()
 
         sigmaList.forEach { sigmaWord ->
@@ -81,4 +80,3 @@ class QuestionCreator(private val wordsList: List<Word>) {
         )
     }
 }
-

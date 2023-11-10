@@ -18,6 +18,7 @@ interface UserRepository {
     // Sigma Operations
     fun getUserSigmaWords(userId: String, currentDate: String, result: MutableLiveData<List<Word>>)
     fun addSigmaWords(userId: String, sigmaWords: List<Word>)
+    fun deleteSigmaWords(userId: String, forDeleteSigmaWords: List<Word>)
 
 
     // Quiz Result Operations

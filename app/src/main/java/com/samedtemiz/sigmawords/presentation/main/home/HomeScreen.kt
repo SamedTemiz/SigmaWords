@@ -116,7 +116,7 @@ fun HeaderSection(user: User) {
                         }
                     )
                     Text(
-                        text = "Geri dönmene sevindim", fontSize = 18.sp,
+                        text = "Tekrar hoşgeldin", fontSize = 18.sp,
                         fontFamily = FontFamily(Font(R.font.acherus_grotesque))
                     )
                 }
@@ -131,14 +131,6 @@ fun HeaderSection(user: User) {
                             .size(70.dp),
                         contentScale = ContentScale.FillWidth,
                     )
-//                    Image(
-//                        painterResource(id = R.drawable.seftali),
-//                        contentDescription = "Profile Picture",
-//                        modifier = Modifier
-//                            .clip(CircleShape)
-//                            .size(60.dp),
-//                        contentScale = ContentScale.FillWidth,
-//                    )
                 }
             }
         }

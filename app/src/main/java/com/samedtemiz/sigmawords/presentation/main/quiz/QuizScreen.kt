@@ -4,7 +4,6 @@ import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -50,34 +49,32 @@ fun QuizScreen(
 
                 is UiState.Failure -> {
                     val words by viewModel.words.observeAsState()
-
+                    val sigmaWords by viewModel.sigmaWords.observeAsState()
 
                     var isQuizCreated by remember { mutableStateOf(false) }
 
-                    if (!isQuizCreated && !words.isNullOrEmpty()) {
-                        LaunchedEffect(key1 = isQuizCreated) {
+                    if (!isQuizCreated && !words.isNullOrEmpty() && sigmaWords != null) {
+                        LaunchedEffect(key1 = Unit) {
                             viewModel.createQuiz(Options.QUESTION_COUNT.get as Int)
                             isQuizCreated = true
                         }
+                    }else{
+                        Log.d("SAMED","becermedik")
                     }
 
-                    viewModel.fetchWords(Options.A1.get.toString())
+                    viewModel.fetchWords(Options.ALL_WORDS.get.toString())
                 }
 
                 is UiState.Success -> {
                     Log.d(TAG, "Quiz verisi alındı.")
                     val isSolved = state.data.solved
-                    if(isSolved == true){
-                        viewModel.getCurrentResult(quizId = state.data.quizId ?: "")
-                    }
-
                     NavHost(
                         navController = navController,
                         route = Screen.Main.Quiz.route,
                         startDestination = if (isSolved == false) Screen.Main.Quiz.Start.route else Screen.Main.Quiz.AlreadySolved.route
                     ) {
                         composable(Screen.Main.Quiz.Start.route) {
-                            StartQuizScreen(viewModel = viewModel, navController = navController)
+                            StartQuizScreen(navController = navController, questionCount = state.data.questions?.size ?: 0)
                         }
 
                         composable(Screen.Main.Quiz.AlreadySolved.route) {
@@ -89,8 +86,11 @@ fun QuizScreen(
                         }
 
                         composable(Screen.Main.Quiz.Result.route) {
-                            val resultState by viewModel.result.observeAsState()
-                            ResultScreen(resultState = resultState ?: UiState.Loading)
+                            LaunchedEffect(key1 = Unit){
+                                viewModel.getCurrentResult(quizId = state.data.quizId ?: "")
+                            }
+
+                            ResultScreen(viewModel = viewModel)
                         }
                     }
                 }

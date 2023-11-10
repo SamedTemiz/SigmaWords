@@ -1,4 +1,4 @@
-package com.samedtemiz.sigmawords.presentation.main.quiz
+package com.samedtemiz.sigmawords.presentation.main.quiz.extensions
 
 import com.samedtemiz.sigmawords.data.model.Word
 import com.samedtemiz.sigmawords.util.Constant
@@ -21,6 +21,7 @@ class SigmaOperations {
 
             val sigmaDate = date.plusDays(daysToAdd.toLong())
             word.sigmaDate = sigmaDate.format(Constant.DATE_FORMATTER)
+
             word.sigmaLevel = newLevel
             word.success = if(word.sigmaLevel == 6) 1 else 0
         }
