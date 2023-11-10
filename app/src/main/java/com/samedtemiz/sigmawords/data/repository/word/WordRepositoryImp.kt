@@ -1,6 +1,5 @@
 package com.samedtemiz.sigmawords.data.repository.word
 
-import android.content.ContentValues.TAG
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -11,15 +10,19 @@ import com.samedtemiz.sigmawords.data.model.Word
 import com.samedtemiz.sigmawords.data.repository.word.WordRepository
 import com.samedtemiz.sigmawords.util.Constant.DATE_FORMATTER
 import com.samedtemiz.sigmawords.util.UiState
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-//private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+
+private const val TAG = "Word Repository"
 
 class WordRepositoryImp(
     private val database: FirebaseFirestore
 ) : WordRepository {
-    private val TAG = "WordRepository"
+
 
     override fun getWords(result: MutableLiveData<List<Word>>, wordsListName: String) {
         database
@@ -28,38 +31,20 @@ class WordRepositoryImp(
             .collection(wordsListName)
             .get()
             .addOnSuccessListener { documents ->
-                val words = arrayListOf<Word>()
+                val words = mutableListOf<Word>()
                 for (document in documents) {
                     val word = document.toObject<Word>()
                     words.add(word)
                 }
 
-                result.postValue(words)
-            }
-            .addOnFailureListener {
-                result.postValue(null)
-            }
-    }
-
-    override fun getSigmaWords(result: MutableLiveData<List<Word>>, wordsListName: String) {
-        database
-            .collection("AppDatabase")
-            .document("Words")
-            .collection(wordsListName)
-            .whereEqualTo("sigmaDate", LocalDateTime.now().format(DATE_FORMATTER))
-            .get()
-            .addOnSuccessListener { documents ->
-                val words = arrayListOf<Word>()
-                for (document in documents) {
-                    val word = document.toObject<Word>()
-                    words.add(word)
+                CoroutineScope(Dispatchers.IO).launch {
+                    result.postValue(words)
                 }
-
-                result.postValue(words)
             }
             .addOnFailureListener {
-                result.postValue(null)
-                Log.d(TAG, "${it.message}")
+                CoroutineScope(Dispatchers.IO).launch {
+                    result.postValue(null)
+                }
             }
     }
 

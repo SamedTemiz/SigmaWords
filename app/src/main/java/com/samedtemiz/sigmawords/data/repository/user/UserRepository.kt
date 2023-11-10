@@ -1,7 +1,6 @@
 package com.samedtemiz.sigmawords.data.repository.user
 
 import androidx.lifecycle.MutableLiveData
-import com.samedtemiz.sigmawords.data.model.Question
 import com.samedtemiz.sigmawords.data.model.Quiz
 import com.samedtemiz.sigmawords.data.model.Result
 import com.samedtemiz.sigmawords.data.model.User
@@ -14,6 +13,11 @@ interface UserRepository {
     fun getQuiz(userId: String, quiz: MutableLiveData<UiState<Quiz>>)
     fun addQuiz(userId: String, quiz: Quiz)
     fun updateQuiz(userId: String, quiz: Quiz)
+
+
+    // Sigma Operations
+    fun getUserSigmaWords(userId: String, currentDate: String, result: MutableLiveData<List<Word>>)
+    fun addSigmaWords(userId: String, sigmaWords: List<Word>)
 
 
     // Quiz Result Operations

@@ -54,6 +54,7 @@ import androidx.navigation.NavController
 import com.samedtemiz.sigmawords.R
 import com.samedtemiz.sigmawords.data.model.Question
 import com.samedtemiz.sigmawords.presentation.Screen
+import com.samedtemiz.sigmawords.presentation.main.home.component.AnimatedShimmer
 import com.samedtemiz.sigmawords.presentation.main.quiz.QuizViewModel
 import com.samedtemiz.sigmawords.util.UiState
 import kotlinx.coroutines.launch
@@ -79,7 +80,7 @@ fun DailyQuizScreen(
         quizState?.run {
             when (this) {
                 is UiState.Loading -> {
-                    CircularProgressIndicator()
+                    AnimatedShimmer(screen = "quiz")
                 }
 
                 is UiState.Failure -> {
