@@ -1,12 +1,14 @@
 package com.samedtemiz.sigmawords.presentation.main.quiz
 
 import android.util.Log
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
+import com.samedtemiz.sigmawords.authentication.SignInState
 import com.samedtemiz.sigmawords.data.model.Question
 import com.samedtemiz.sigmawords.data.model.Quiz
 import com.samedtemiz.sigmawords.data.model.Word
@@ -22,6 +24,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -43,60 +46,27 @@ class QuizViewModel @Inject constructor(
     private val _quiz = MutableLiveData<UiState<Quiz>>()
     val quiz: LiveData<UiState<Quiz>> = _quiz
 
-
-    private val _isSolved = MutableLiveData<Boolean>()
-    val isSolved: LiveData<Boolean> = _isSolved
-
     private val _result = MutableLiveData<UiState<Result>>()
     val result: LiveData<UiState<Result>> = _result
 
     init {
-        _quiz.observeForever { quizValue ->
-            when (quizValue) {
-                is UiState.Loading -> {
-                    Log.d(TAG, "Quiz verisi yükleniyor...")
-                }
+        _quiz.value = UiState.Loading
 
-                is UiState.Failure -> {
-                    Log.d(TAG, quizValue.error.toString())
-
-                    viewModelScope.launch(Dispatchers.IO) {
-                        wordRepository.getWords(
-                            result = _words,
-                            wordsListName = Options.A1.get.toString()
-                        )
-                        userRepository.getUserSigmaWords(
-                            userId = userId,
-                            currentDate = CURRENT_DATE,
-                            result = _sigmaWords
-                        )
-                    }
-                    createQuiz(questionCount = Options.QUESTION_COUNT.get as Int)
-                }
-
-                is UiState.Success -> {
-                    _isSolved.postValue(quizValue.data.solved ?: false)
-                    userRepository.getCurrentResult(
-                        userId = userId,
-                        quizId = quizValue.data.quizId ?: "",
-                        result = _result
-                    )
-
-                    Log.d(TAG, "Quiz verisi alındı.")
-                    Log.d(TAG, quizValue.data.toString())
-                }
-            }
-        }
-
-        viewModelScope.launch {
-            userRepository.getQuiz(userId, _quiz)
+        try {
+            userRepository.getQuiz(userId = userId, quiz = _quiz)
+        } catch (e: Exception) {
+            Log.d(TAG, e.message.toString())
         }
     }
 
-    private fun createQuiz(questionCount: Int) {
+    fun createQuiz(questionCount: Int) {
         Log.d(TAG, "Yeni quiz oluşturuluyor.")
 
         val questions = createQuestions(questionCount = questionCount)
+        questions.forEach {
+            Log.d(TAG, it.id.toString())
+        }
+
         val quiz = Quiz(
             quizId = "",
             questions = questions,
@@ -105,32 +75,25 @@ class QuizViewModel @Inject constructor(
             solved = false
         )
 
-        viewModelScope.launch {
+        try {
             userRepository.addQuiz(userId, quiz)
             Log.d(TAG, "Veriler işleniyor.")
-            delay(2000)
             userRepository.getQuiz(userId, _quiz)
+            Log.d(TAG, "Quiz oluşturuldu.")
+        } catch (e: Exception) {
+            Log.d(TAG, e.message.toString())
         }
-
-        Log.d(TAG, "Quiz oluşturuluyor.")
     }
 
-
     private fun createQuestions(questionCount: Int): List<Question> {
-        var wordList: List<Word> = emptyList()
-        var sigmaList: List<Word> = emptyList()
+        var regularQuestions: List<Question> = emptyList()
 
-        var questions: List<Question> = listOf()
-
-        words.observeForever { wordList = it }
-        sigmaWords.observeForever { sigmaList = it }
-
-        if(wordList.isNotEmpty()){
-            val questionCreator = QuestionCreator(wordsList = wordList, sigmaList = sigmaList)
-            questions = questionCreator.createQuestions(questionCount)
+        _words.value?.let { wordList ->
+            val questionCreator = QuestionCreator(wordList)
+            regularQuestions = questionCreator.createRegularQuestions(questionCount)
         }
 
-        return questions
+        return regularQuestions
     }
 
     fun createResult(data: Quiz) {
@@ -146,18 +109,26 @@ class QuizViewModel @Inject constructor(
             wrongAnswers = resultSummary.wrongAnswers
         )
 
-        viewModelScope.launch {
-            data.result = result
-            data.solved = true
+        data.result = result
+        data.solved = true
+        Log.d(TAG, "Result oluşturuluyor.")
 
-            _result.postValue(UiState.Success(result))
-            Log.d(TAG, "Result oluşturuluyor.")
-
+        try {
             userRepository.updateQuiz(userId = userId, quiz = data)
             userRepository.addResult(userId = userId, result = result)
-
-            Log.d(TAG, "Quiz solved durumu değiştirildi.")
+        } catch (e: Exception) {
+            Log.d(TAG, e.message.toString())
         }
+
+        Log.d(TAG, "Quiz solved durumu değiştirildi.")
     }
 
+    fun getCurrentResult(quizId: String) {
+        userRepository.getCurrentResult(userId = userId, quizId = quizId, _result)
+    }
+
+    fun fetchWords(wordsListName: String) {
+        Log.d(TAG, "Fetch çalıştı")
+        wordRepository.getWords(_words, wordsListName)
+    }
 }

@@ -9,6 +9,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -20,30 +21,26 @@ import com.samedtemiz.sigmawords.util.UiState
 private const val TAG = "ResultScreen"
 
 @Composable
-fun ResultScreen(viewModel: QuizViewModel) {
-    val resultState by viewModel.result.observeAsState()
-
+fun ResultScreen(resultState: UiState<Result>) {
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        resultState?.run {
-            when (this) {
-                is UiState.Loading -> {
-                    CircularProgressIndicator(color = MaterialTheme.colorScheme.onBackground)
-                }
-
-                is UiState.Success -> {
-                    ResultCard(data)
-                }
-
-                is UiState.Failure -> {
-                    Log.d(TAG, error.toString())
-                }
+        when (resultState) {
+            is UiState.Loading -> {
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.onBackground)
             }
-        } ?: Text(text = "DSGSDG")
 
+            is UiState.Success -> {
+                Log.d(TAG, "Result verisi alındı.")
+                ResultCard(resultState.data)
+            }
+
+            is UiState.Failure -> {
+                Log.d(TAG, resultState.error.toString())
+            }
+        }
     }
 }
 

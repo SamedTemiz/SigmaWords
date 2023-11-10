@@ -3,19 +3,21 @@ package com.samedtemiz.sigmawords.data.repository.user
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.toObject
-import com.samedtemiz.sigmawords.data.model.Question
 import com.samedtemiz.sigmawords.data.model.Quiz
 import com.samedtemiz.sigmawords.data.model.Result
 import com.samedtemiz.sigmawords.data.model.User
+import com.samedtemiz.sigmawords.data.model.Word
 import com.samedtemiz.sigmawords.util.Constant.CURRENT_DATE
 import com.samedtemiz.sigmawords.util.UiState
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 private const val TAG = "UserRepository"
 
-class UserRepositoryImp(
-    private val database: FirebaseFirestore
-) : UserRepository {
+class UserRepositoryImp(private val database: FirebaseFirestore) : UserRepository {
 
     // Quiz Operations - Quizzes
     override fun getQuiz(userId: String, quiz: MutableLiveData<UiState<Quiz>>) {
@@ -28,10 +30,15 @@ class UserRepositoryImp(
                 if (!documents.isEmpty) {
                     for (document in documents) {
                         val quizData = document.toObject<Quiz>()
-                        quiz.postValue(UiState.Success(quizData))
+                        CoroutineScope(Dispatchers.IO).launch {
+                            quiz.postValue(UiState.Success(quizData))
+                        }
+
                     }
                 } else {
-                    quiz.postValue(UiState.Failure("Quiz bulunamadı."))
+                    CoroutineScope(Dispatchers.IO).launch {
+                        quiz.postValue(UiState.Failure("Quiz bulunamadı."))
+                    }
                 }
             }
             .addOnFailureListener { exception ->
@@ -43,17 +50,19 @@ class UserRepositoryImp(
         val quizzesCollection =
             database.collection("UserDatabase").document(userId).collection("Quizzes")
 
-        quizzesCollection.add(quiz)
-            .addOnSuccessListener { documentReference ->
-                val quizId = documentReference.id
-                val updatedQuiz = quiz.copy(quizId = quizId) // quizId değerini güncelleyin
-                quizzesCollection.document(quizId)
-                    .set(updatedQuiz) // Güncellenmiş quiz'i belgeye yazın
-                Log.d(TAG, "Quiz eklendi: ${documentReference.id}")
-            }
-            .addOnFailureListener { e ->
-                Log.w(TAG, "Quiz eklenirken hata oluştu", e)
-            }
+        CoroutineScope(Dispatchers.IO).launch {
+            quizzesCollection.add(quiz)
+                .addOnSuccessListener { documentReference ->
+                    val quizId = documentReference.id
+                    val updatedQuiz = quiz.copy(quizId = quizId) // quizId değerini güncelleyin
+                    quizzesCollection.document(quizId)
+                        .set(updatedQuiz) // Güncellenmiş quiz'i belgeye yazın
+                    Log.d(TAG, "Quiz eklendi: ${documentReference.id}")
+                }
+                .addOnFailureListener { e ->
+                    Log.w(TAG, "Quiz eklenirken hata oluştu", e)
+                }
+        }
     }
 
     override fun updateQuiz(userId: String, quiz: Quiz) {
@@ -62,15 +71,53 @@ class UserRepositoryImp(
             database.collection("UserDatabase").document(userId).collection("Quizzes")
 
         val quizId = quiz.quizId // Quiz'in kimlik bilgisini al
+        CoroutineScope(Dispatchers.IO).launch {
+            quizzesCollection.document(quizId!!)
+                .set(quiz)
+                .addOnSuccessListener {
+                    Log.d(TAG, "Quiz güncellendi: $quizId")
+                }
+                .addOnFailureListener {
+                    Log.d(TAG, "Quiz güncelleme hatası: " + it.localizedMessage)
+                }
+        }
+    }
 
-        quizzesCollection.document(quizId!!)
-            .set(quiz)
-            .addOnSuccessListener {
-                Log.d(TAG, "Quiz güncellendi: $quizId")
+
+    // Sigma Operations
+    override fun getUserSigmaWords(
+        userId: String,
+        currentDate: String,
+        result: MutableLiveData<List<Word>>
+    ) {
+        val wordsCollection =
+            database.collection("UserDatabase").document(userId).collection("SigmaWords")
+
+        wordsCollection.whereEqualTo("sigmaDate", currentDate)
+            .get()
+            .addOnSuccessListener { documents ->
+                if (!documents.isEmpty) {
+                    val wordList = mutableListOf<Word>()
+                    for (document in documents) {
+                        val word = document.toObject<Word>()
+                        wordList.add(word)
+                    }
+                    CoroutineScope(Dispatchers.IO).launch {
+                        result.postValue(wordList)
+                    }
+                } else {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        result.postValue(null)
+                    }
+                }
             }
-            .addOnFailureListener{
-                Log.d(TAG, "Quiz güncelleme hatası: "+it.localizedMessage)
+            .addOnFailureListener { exception ->
+                Log.w(TAG, "Sigma kelimeler alınırken hata: ", exception)
             }
+    }
+
+    override fun addSigmaWords(userId: String, sigmaWords: List<Word>) {
+        TODO("Not yet implemented")
     }
 
 
@@ -78,14 +125,15 @@ class UserRepositoryImp(
     override fun addResult(userId: String, result: Result) {
         val quizzesCollection =
             database.collection("UserDatabase").document(userId).collection("Results")
-
-        quizzesCollection.add(result)
-            .addOnSuccessListener { documentReference ->
-                Log.d(TAG, "Result eklendi: ${documentReference.id}")
-            }
-            .addOnFailureListener { e ->
-                Log.w(TAG, "Result eklenirken hata:", e)
-            }
+        CoroutineScope(Dispatchers.IO).launch {
+            quizzesCollection.add(result)
+                .addOnSuccessListener { documentReference ->
+                    Log.d(TAG, "Result eklendi: ${documentReference.id}")
+                }
+                .addOnFailureListener { e ->
+                    Log.w(TAG, "Result eklenirken hata:", e)
+                }
+        }
     }
 
     override fun getCurrentResult(
@@ -102,14 +150,20 @@ class UserRepositoryImp(
                 if (!documents.isEmpty) {
                     for (document in documents) {
                         val resultData = document.toObject<Result>()
-                        result.value = UiState.Success(resultData)
+                        CoroutineScope(Dispatchers.IO).launch {
+                            result.postValue(UiState.Success(resultData))
+                        }
                     }
                 } else {
-                    result.postValue(UiState.Failure("Result bulunamadı."))
+                    CoroutineScope(Dispatchers.IO).launch {
+                        result.postValue(UiState.Failure("Result bulunamadı."))
+                    }
                 }
             }
             .addOnFailureListener { e ->
-                result.postValue(UiState.Failure("Error getting result: $e"))
+                CoroutineScope(Dispatchers.IO).launch {
+                    result.postValue(UiState.Failure("Error getting result: $e"))
+                }
             }
     }
 
@@ -117,24 +171,30 @@ class UserRepositoryImp(
         val quizzesCollection =
             database.collection("UserDatabase").document(userId).collection("Results")
 
-        quizzesCollection
+        quizzesCollection.orderBy("resultDate", Query.Direction.DESCENDING)
             .get()
             .addOnSuccessListener { documents ->
                 if (!documents.isEmpty) {
-                    val resultList = ArrayList<Result>() // Result tutan list
+                    val resultList = mutableListOf<Result>() // Result tutan list
 
                     for (document in documents) {
                         val resultData = document.toObject<Result>()
                         resultList.add(resultData)
                     }
+                    CoroutineScope(Dispatchers.IO).launch {
+                        result.postValue(UiState.Success(resultList))
+                    }
 
-                    result.postValue(UiState.Success(resultList))
                 } else {
-                    result.postValue(UiState.Failure("Result listesi oluşturuLAMADI."))
+                    CoroutineScope(Dispatchers.IO).launch {
+                        result.postValue(UiState.Failure("Result listesi oluşturuLAMADI."))
+                    }
                 }
             }
             .addOnFailureListener { e ->
-                result.postValue(UiState.Failure("Error getting result: $e"))
+                CoroutineScope(Dispatchers.IO).launch {
+                    result.postValue(UiState.Failure("Error getting result: $e"))
+                }
             }
     }
 

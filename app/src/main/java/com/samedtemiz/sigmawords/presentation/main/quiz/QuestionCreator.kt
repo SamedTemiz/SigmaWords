@@ -7,34 +7,36 @@ import com.samedtemiz.sigmawords.util.Constant.CURRENT_DATE
 import com.samedtemiz.sigmawords.util.Options
 
 private const val TAG = "Question Creator"
-class QuestionCreator(private val wordsList: List<Word>, private val sigmaList: List<Word>) {
+
+class QuestionCreator(private val wordsList: List<Word>) {
+
     private val questions = mutableListOf<Question>()
     private val selectedWords = mutableListOf<Word>()
 
-    fun createQuestions(questionCount: Int): List<Question> {
-        createRegularQuestions(wordsList, questionCount)
-        createSigmaQuestions(sigmaList)
-        return questions
-    }
-
-    private fun createRegularQuestions(wordList: List<Word>, questionCount: Int) {
+    fun createRegularQuestions(questionCount: Int): List<Question> {
+        Log.d(TAG, "Normal sorualar oluşturuluyor.")
         repeat(questionCount) {
-            val selectedWord = wordList.filter { it.shownDate == "null" }.randomOrNull()
+            val selectedWord = wordsList.filter { it.shownDate == "null" }.randomOrNull()
 
             if (selectedWord != null && selectedWord !in selectedWords) {
                 selectedWord.shownDate = CURRENT_DATE
                 selectedWords.add(selectedWord)
 
                 val options = mutableListOf<String>().apply { add(selectedWord.meaning ?: "") }
-                fillOptions(options, wordList)
+                fillOptions(options, wordsList)
 
                 val questionObject = createQuestion(selectedWord, options)
                 questions.add(questionObject)
             }
         }
+
+        return questions
     }
 
-    private fun createSigmaQuestions(sigmaList: List<Word>) {
+    fun createSigmaQuestions(sigmaList: List<Word>): List<Question> {
+        Log.d(TAG, "Sigma sorualr oluşturuluyor.")
+        val sigmaQuestions = mutableListOf<Question>()
+
         sigmaList.forEach { sigmaWord ->
             val sigmaOptions = mutableListOf<String>().apply { add(sigmaWord.meaning ?: "") }
             wordsList.let { wordList ->
@@ -42,30 +44,28 @@ class QuestionCreator(private val wordsList: List<Word>, private val sigmaList: 
             }
 
             val sigmaQuestionObject = createQuestion(sigmaWord, sigmaOptions)
-            questions.add(sigmaQuestionObject)
+            sigmaQuestions.add(sigmaQuestionObject)
         }
+
+        return sigmaQuestions
     }
 
     private fun fillOptions(options: MutableList<String>, wordList: List<Word>) {
         while (options.size < (Options.OPTIONS_COUNT.get as? Int ?: 0)) {
             val randomOption = wordList.random().meaning
-            if (randomOption !in options) {
-                options.add(randomOption ?: "")
+            if (randomOption != null && randomOption !in options) {
+                options.add(randomOption)
             }
         }
         options.shuffle()
     }
 
-    private fun fillSigmaOptions(
-        sigmaOptions: MutableList<String>,
-        sigmaList: List<Word>,
-        wordList: List<Word>
-    ) {
+    private fun fillSigmaOptions(sigmaOptions: MutableList<String>, sigmaList: List<Word>, wordList: List<Word>) {
         while (sigmaOptions.size < (Options.OPTIONS_COUNT.get as? Int ?: 0)) {
             val randomSigmaOption =
-                wordList.filter { e -> !sigmaList.contains(e) }.random().meaning
-            if (randomSigmaOption !in sigmaOptions) {
-                sigmaOptions.add(randomSigmaOption ?: "")
+                wordList.filter { e -> !sigmaList.contains(e) }.randomOrNull()?.meaning
+            if (randomSigmaOption != null && randomSigmaOption !in sigmaOptions) {
+                sigmaOptions.add(randomSigmaOption)
             }
         }
         sigmaOptions.shuffle()

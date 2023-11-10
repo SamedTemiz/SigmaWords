@@ -185,7 +185,7 @@ fun ContentSection(viewModel: HomeViewModel) {
                     is UiState.Loading -> {
                         Column {
                             repeat(6) {
-                                AnimatedShimmer()
+                                AnimatedShimmer("home")
                             }
                         }
                     }
