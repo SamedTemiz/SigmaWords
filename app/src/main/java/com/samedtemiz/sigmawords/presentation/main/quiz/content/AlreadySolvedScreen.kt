@@ -48,7 +48,7 @@ fun AlreadySolvedScreen(navController: NavController) {
 
         Spacer(modifier = Modifier.height(20.dp))
         Text(
-            text = "GÜNLÜK TEST ÇÖZÜLDÜ! \n Yarın tekrar gel.",
+            text = "GÜNLÜK TEST ÇÖZÜLDÜ \n Yarın tekrar gel.",
             fontSize = 21.sp,
             fontWeight = FontWeight.Bold,
             fontFamily = FontFamily(Font(R.font.acherus_grotesque)),

@@ -19,7 +19,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.samedtemiz.sigmawords.presentation.Screen
-import com.samedtemiz.sigmawords.presentation.main.home.component.AnimatedShimmer
+import com.samedtemiz.sigmawords.presentation.main.home.AnimatedShimmer
 import com.samedtemiz.sigmawords.presentation.main.quiz.content.AlreadySolvedScreen
 import com.samedtemiz.sigmawords.presentation.main.quiz.content.DailyQuizScreen
 import com.samedtemiz.sigmawords.presentation.main.quiz.content.ResultScreen
@@ -28,6 +28,7 @@ import com.samedtemiz.sigmawords.util.Options
 import com.samedtemiz.sigmawords.util.UiState
 
 private const val TAG = "Quiz Screen"
+
 @Composable
 fun QuizScreen(
     viewModel: QuizViewModel,
@@ -58,8 +59,9 @@ fun QuizScreen(
                             viewModel.createQuiz(Options.QUESTION_COUNT.get as Int)
                             isQuizCreated = true
                         }
-                    }else{
-                        Log.d("SAMED","becermedik")
+                    } else {
+                        Log.d(TAG, "Quiz oluştururken hata!")
+                        AnimatedShimmer(screen = "quiz")
                     }
 
                     viewModel.fetchWords(Options.ALL_WORDS.get.toString())
@@ -78,7 +80,7 @@ fun QuizScreen(
                         }
 
                         composable(Screen.Main.Quiz.AlreadySolved.route) {
-                            AlreadySolvedScreen(navController)
+                            AlreadySolvedScreen(navController = navController)
                         }
 
                         composable(Screen.Main.Quiz.DailyQuiz.route) {
@@ -86,7 +88,7 @@ fun QuizScreen(
                         }
 
                         composable(Screen.Main.Quiz.Result.route) {
-                            LaunchedEffect(key1 = Unit){
+                            LaunchedEffect(key1 = Unit) {
                                 viewModel.getCurrentResult(quizId = state.data.quizId ?: "")
                             }
 

@@ -1,6 +1,7 @@
 package com.samedtemiz.sigmawords.presentation.main.quiz.content
 
 import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -13,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.selection.selectable
@@ -23,7 +23,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -44,17 +43,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.samedtemiz.sigmawords.R
 import com.samedtemiz.sigmawords.data.model.Question
 import com.samedtemiz.sigmawords.presentation.Screen
-import com.samedtemiz.sigmawords.presentation.main.home.component.AnimatedShimmer
+import com.samedtemiz.sigmawords.presentation.main.home.AnimatedShimmer
 import com.samedtemiz.sigmawords.presentation.main.quiz.QuizViewModel
 import com.samedtemiz.sigmawords.util.UiState
 import kotlinx.coroutines.launch
@@ -64,11 +66,12 @@ private const val TAG = "DailyQuiz"
 @Composable
 fun DailyQuizScreen(
     viewModel: QuizViewModel,
-    navController: NavController
+    navController: NavController,
 ) {
     val quizState by viewModel.quiz.observeAsState()
 
     var showResultDialog by remember { mutableStateOf(false) }
+    var showExitWarningDialog by remember{ mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -91,6 +94,11 @@ fun DailyQuizScreen(
                     val totalQuestionsCount = data.questions!!.size // Toplam soru sayısı
                     var currentQuestionIndex by remember { mutableIntStateOf(1) }
 
+                    BackHandler(onBack = {
+                        // Show warning to user or perform any other action
+                        showExitWarningDialog = true
+                    })
+
                     TopProgress(
                         currentQuestionIndex = currentQuestionIndex,
                         totalQuestionsCount = totalQuestionsCount
@@ -103,31 +111,46 @@ fun DailyQuizScreen(
                         },
                         result = {
                             viewModel.createResult(data)
-                            showResultDialog = true
-                        }
-                    )
-                }
-            }
-        }
-
-        if (showResultDialog) {
-            AlertDialog(
-                onDismissRequest = { showResultDialog = false },
-                title = { Text("Tebrikler") },
-                text = { Text("Günlük test tamamlandı. Her gün düzenli olarak testlere katılman çok önemli. Şimdi sonucu öğren!") },
-                confirmButton = {
-                    Button(
-                        onClick = {
-                            showResultDialog = false
 
                             navController.popBackStack()
                             navController.navigate(Screen.Main.Quiz.Result.route)
                         }
-                    ) {
-                        Text("Sonuç")
+                    )
+
+                    if (showExitWarningDialog) {
+                        AlertDialog(
+                            onDismissRequest = {
+                                showExitWarningDialog = false
+                            },
+                            title = { Text("Uyarı") },
+                            text = { Text("Quiz ilerlemesi kaydedilecek, çıkmak istediğinizden emin misiniz?") },
+                            confirmButton = {
+                                Button(
+                                    onClick = {
+                                        viewModel.createResult(data)
+
+                                        navController.popBackStack()
+                                        navController.navigate(Screen.Main.Quiz.Result.route)
+                                    }
+                                ) {
+                                    Text("Evet")
+                                }
+                            },
+                            dismissButton = {
+                                Button(
+                                    onClick = {
+                                        showExitWarningDialog = false
+                                    }
+                                ) {
+                                    Text("Hayır")
+                                }
+                            }
+                        )
+                    }else{
+                        // TO-DO
                     }
                 }
-            )
+            }
         }
     }
 }
@@ -169,35 +192,38 @@ fun TopProgress(
                     .fillMaxWidth()
             ) {
                 Text(
-                    text = "$totalQuestionsCount questions",
+                    text = "Soru sayısı: $totalQuestionsCount",
                     fontSize = 21.sp,
                     fontWeight = FontWeight.Bold,
-                    fontFamily = FontFamily(Font(R.font.acherus_grotesque))
+                    fontFamily = FontFamily(Font(R.font.acherus_grotesque)),
+                    modifier = Modifier.weight(1f)
                 )
 
-                Card(shape = RoundedCornerShape(6.dp), modifier = Modifier.size(70.dp, 30.dp)) {
+                Card(shape = RoundedCornerShape(6.dp), modifier = Modifier.height(35.dp).weight(1f)) {
                     Box(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier.fillMaxSize()
                     ) {
                         Text(
-                            text = "A1",
-                            fontSize = 18.sp,
-                            fontFamily = FontFamily(Font(R.font.acherus_grotesque))
-                        )
-                    }
-                }
-
-                Card(shape = RoundedCornerShape(6.dp), modifier = Modifier.size(70.dp, 30.dp)) {
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        Text(
-                            text = "00:30",
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold,
-                            fontFamily = FontFamily(Font(R.font.acherus_grotesque))
+                            buildAnnotatedString {
+                                withStyle(
+                                    style = SpanStyle(
+                                        fontSize = 20.sp,
+                                        fontFamily = FontFamily(Font(R.font.acherus_grotesque))
+                                    )
+                                ){
+                                    append("Seviye: ")
+                                }
+                                withStyle(
+                                    style = SpanStyle(
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 20.sp,
+                                        fontFamily = FontFamily(Font(R.font.acherus_grotesque_bold))
+                                    )
+                                ){
+                                    append("A1-C1")
+                                }
+                            }
                         )
                     }
                 }
@@ -216,7 +242,7 @@ fun TopProgress(
                 modifier = Modifier.fillMaxSize()
             ) {
                 Text(
-                    text = "Question $currentQuestionIndex of $totalQuestionsCount",
+                    text = "Soru $currentQuestionIndex",
                     fontSize = 18.sp,
                     fontFamily = FontFamily(Font(R.font.acherus_grotesque))
                 )

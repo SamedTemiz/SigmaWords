@@ -1,4 +1,4 @@
-package com.samedtemiz.sigmawords.presentation.main.home.component
+package com.samedtemiz.sigmawords.presentation.main.home
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.animation.animateContentSize
@@ -8,12 +8,13 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ContentAlpha
 import androidx.compose.material.ExperimentalMaterialApi
@@ -37,13 +38,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -51,6 +56,7 @@ import androidx.compose.ui.unit.sp
 import com.samedtemiz.sigmawords.R
 import com.samedtemiz.sigmawords.data.model.Word
 import com.samedtemiz.sigmawords.presentation.ui.theme.SigmaWordsTheme
+import com.samedtemiz.sigmawords.presentation.ui.theme.correct
 
 @OptIn(ExperimentalMaterial3Api::class)
 @ExperimentalMaterialApi
@@ -59,6 +65,8 @@ fun ExpandableResultCard(
     title: String,
     titleFontSize: TextStyle = MaterialTheme.typography.titleLarge,
     titleFontWeight: FontWeight = FontWeight.Bold,
+    questionCount: Int? = 0,
+    correctCount: Int? = 0,
     shape: Shape = MaterialTheme.shapes.medium,
     padding: Dp = 12.dp,
     wordList: List<Word>?
@@ -80,7 +88,7 @@ fun ExpandableResultCard(
         shape = shape,
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.secondaryContainer,
-            contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+            contentColor = MaterialTheme.colorScheme.onBackground
         ),
         onClick = {
             expandedState = !expandedState
@@ -96,13 +104,38 @@ fun ExpandableResultCard(
             ) {
                 Text(
                     modifier = Modifier
-                        .weight(6f),
+                        .weight(5f),
                     text = title,
                     fontSize = titleFontSize.fontSize,
                     fontWeight = titleFontWeight,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
+
+                Text(
+                    buildAnnotatedString {
+                        withStyle(
+                            style = SpanStyle(
+                                fontSize = 22.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = correct
+                            )
+                        ) {
+                            append("$correctCount")
+                        }
+                        withStyle(
+                            style = SpanStyle(
+                                fontSize = 22.sp,
+                            )
+                        ) {
+                            append("/$questionCount")
+                        }
+                    },
+                    modifier = Modifier
+                        .weight(2f)
+                )
+
+
                 IconButton(
                     modifier = Modifier
                         .weight(1f)
@@ -120,8 +153,7 @@ fun ExpandableResultCard(
 
             wordList?.let { words ->
                 if (expandedState) {
-                    Divider(thickness = 1.dp, color = MaterialTheme.colorScheme.onSecondaryContainer)
-                    words.forEach{word ->
+                    words.forEach { word ->
                         WordCard(word)
                     }
                 }
@@ -132,8 +164,7 @@ fun ExpandableResultCard(
 
 @Composable
 fun WordCard(word: Word) {
-    val containerColor = MaterialTheme.colorScheme.secondary
-    val contentColor = MaterialTheme.colorScheme.onSecondary
+    val contentColor = MaterialTheme.colorScheme.onBackground
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -142,13 +173,12 @@ fun WordCard(word: Word) {
         Image(
             painter = painterResource(id = R.drawable.wrong),
             contentDescription = "",
-            modifier = Modifier.size(50.dp)
+            modifier = Modifier.size(40.dp)
         )
         Column(
             Modifier
                 .padding(start = 10.dp)
                 .clip(RoundedCornerShape(5.dp))
-                .background(containerColor)
         ) {
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,

@@ -67,7 +67,7 @@ fun SignInScreen(
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(0.5f)
+                .fillMaxHeight(0.4f)
                 .padding(horizontal = 16.dp)
                 .shadow(
                     elevation = 25.dp,
@@ -76,7 +76,7 @@ fun SignInScreen(
                     shape = RoundedCornerShape(20.dp)
                 ),
             shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
             elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
         ) {
             Column(
@@ -96,29 +96,15 @@ fun SignInScreen(
                         .padding(top = 16.dp)
                 )
 
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
+                Button(
+                    onClick = { onSignInClick() },
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp)
+                        .size(100.dp)
+                        .padding(),  //avoid the oval shape
+                    shape = CircleShape,
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.onSecondaryContainer)
                 ) {
-                    Text(
-                        text = "Hoşgeldiniz",
-                        fontSize = 21.sp,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = FontFamily(Font(R.font.acherus_grotesque)),
-                        modifier = Modifier.padding(bottom = 16.dp)
-                    )
-                    Button(
-                        onClick = { onSignInClick() },
-                        modifier = Modifier
-                            .size(100.dp)
-                            .padding(),  //avoid the oval shape
-                        shape = CircleShape,
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-                    ) {
-                        Text(text = "Giriş", fontSize = 20.sp)
-                    }
+                    Text(text = "GİRİŞ", fontSize = 20.sp, fontWeight = FontWeight.Bold)
                 }
             }
         }

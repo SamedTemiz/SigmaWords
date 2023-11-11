@@ -42,9 +42,7 @@ class HomeViewModel @Inject constructor(private val userRepository: UserReposito
             }
         }
 
-        viewModelScope.launch {
-            getResultList()
-        }
+        getResultList()
     }
 
 

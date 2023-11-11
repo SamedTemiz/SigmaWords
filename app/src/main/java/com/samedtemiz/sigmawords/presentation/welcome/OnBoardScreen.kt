@@ -4,6 +4,7 @@ import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,8 +17,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -31,12 +34,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -55,28 +61,28 @@ import com.samedtemiz.sigmawords.presentation.Screen
 import com.samedtemiz.sigmawords.presentation.ui.theme.SigmaWordsTheme
 import kotlinx.coroutines.launch
 
-@Preview()
-@Preview(uiMode = UI_MODE_NIGHT_YES)
-@Composable
-fun OnBoardingPreview() {
-    SigmaWordsTheme {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.background
-        ) {
-            OnboardingScreen()
-        }
-    }
-}
+//@Preview()
+//@Preview(uiMode = UI_MODE_NIGHT_YES)
+//@Composable
+//fun OnBoardingPreview() {
+//    SigmaWordsTheme {
+//        Surface(
+//            modifier = Modifier.fillMaxSize(),
+//            color = MaterialTheme.colorScheme.background
+//        ) {
+//            OnboardingScreen()
+//        }
+//    }
+//}
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 fun OnboardingScreen(
-//    navController: NavHostController,
-//    onBoardViewModel: OnBoardViewModel = hiltViewModel()
+    navController: NavHostController,
+    onBoardViewModel: OnBoardViewModel = hiltViewModel()
 ) {
     val animations = listOf(
-        R.raw.what_is_it,
+        R.raw.welcome_user,
         R.raw.what_is_it,
         R.raw.progress
     )
@@ -104,58 +110,74 @@ fun OnboardingScreen(
 
     Column(
         Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Top
     ) {
 
         HorizontalPager(
             state = pagerState,
-            Modifier.wrapContentSize().weight(7f)
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(0.8f)
+                .padding(26.dp)
         ) { currentPage ->
             Column(
-                Modifier
-                    .fillMaxSize()
-                    .padding(26.dp),
+                verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+                modifier = Modifier.fillMaxSize()
             ) {
                 val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(animations[currentPage]))
                 LottieAnimation(
                     composition = composition,
                     iterations = LottieConstants.IterateForever,
                     modifier = Modifier
-                        .size(350.dp)
-                        .fillMaxHeight(0.5f)
+                        .size(350.dp, 300.dp)
                         .clip(RoundedCornerShape(10.dp))
                         .background(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.4f))
                 )
-                Column(Modifier.fillMaxSize()) {
+
+                Column(
+                    verticalArrangement = Arrangement.Top,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                ) {
                     Text(
                         text = pageTitle[currentPage],
                         Modifier
                             .fillMaxWidth()
-                            .weight(2f)
+                            .height(75.dp)
                             .padding(top = 10.dp)
-                            .height(75.dp),
+                            .weight(1f),
                         textAlign = TextAlign.End,
                         fontSize = 28.sp,
                         fontWeight = FontWeight.Bold,
                         fontFamily = FontFamily(Font(R.font.acherus_grotesque_bold))
                     )
                     Text(
-                        text = titles[currentPage],
-                        Modifier.fillMaxWidth().weight(1f),
-                        textAlign = TextAlign.Start,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        textDecoration = TextDecoration.Underline,
-                        fontFamily = FontFamily(Font(R.font.acherus_grotesque_bold))
-                    )
-                    Text(
-                        text = descriptions[currentPage],
-                        Modifier.fillMaxWidth().weight(3f),
-                        textAlign = TextAlign.Start,
-                        fontSize = 18.sp,
-                        fontFamily = FontFamily(Font(R.font.acherus_grotesque))
+                        buildAnnotatedString {
+                            withStyle(
+                                style = SpanStyle(
+                                    fontSize = 20.sp,
+                                    fontFamily = FontFamily(Font(R.font.acherus_grotesque_bold)),
+                                    textDecoration = TextDecoration.Underline
+                                )
+                            ) {
+                                append(titles[currentPage])
+                            }
+
+                            withStyle(
+                                style = SpanStyle(
+                                    fontSize = 18.sp,
+                                    fontFamily = FontFamily(Font(R.font.acherus_grotesque)),
+                                )
+                            ) {
+                                append("\n\n" + descriptions[currentPage])
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(2f),
                     )
                 }
             }
@@ -164,24 +186,23 @@ fun OnboardingScreen(
         PageIndicator(
             pageCount = animations.size,
             currentPage = pagerState.currentPage,
-            modifier = Modifier.padding(20.dp).weight(2f)
+            modifier = Modifier
+        )
+
+        ButtonsSection(
+        pagerState = pagerState,
+        navController = navController,
+        onBoardViewModel = onBoardViewModel
         )
     }
-
-    ButtonsSection(
-//        pagerState = pagerState,
-//        navController = navController,
-//        onBoardViewModel = onBoardViewModel
-    )
-
 }
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 fun ButtonsSection(
-//    pagerState: PagerState,
-//    navController: NavHostController,
-//    onBoardViewModel: OnBoardViewModel
+    pagerState: PagerState,
+    navController: NavHostController,
+    onBoardViewModel: OnBoardViewModel
 ) {
 
     val scope = rememberCoroutineScope()
@@ -191,18 +212,16 @@ fun ButtonsSection(
             .fillMaxSize()
             .padding(26.dp)
     ) {
-//        pagerState.currentPage != 2
-        if (false) {
+        if (pagerState.currentPage != 2) {
             Text(
                 text = "Next",
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .clickable {
-
-//                        scope.launch {
-//                            val nextPage = pagerState.currentPage + 1
-//                            pagerState.scrollToPage(nextPage)
-//                        }
+                        scope.launch {
+                            val nextPage = pagerState.currentPage + 1
+                            pagerState.scrollToPage(nextPage)
+                        }
                     },
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
@@ -213,12 +232,12 @@ fun ButtonsSection(
                 modifier = Modifier
                     .align(Alignment.BottomStart)
                     .clickable {
-//                        scope.launch {
-//                            val prevPage = pagerState.currentPage - 1
-//                            if (prevPage >= 0) {
-//                                pagerState.scrollToPage(prevPage)
-//                            }
-//                        }
+                        scope.launch {
+                            val prevPage = pagerState.currentPage - 1
+                            if (prevPage >= 0) {
+                                pagerState.scrollToPage(prevPage)
+                            }
+                        }
                     },
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
@@ -227,9 +246,9 @@ fun ButtonsSection(
         } else {
             OutlinedButton(
                 onClick = {
-//                    onBoardViewModel.saveOnBoardingState(completed = true)
-//                    navController.popBackStack()
-//                    navController.navigate(Screen.SignIn.route)
+                    onBoardViewModel.saveOnBoardingState(completed = true)
+                    navController.popBackStack()
+                    navController.navigate(Screen.SignIn.route)
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -258,8 +277,6 @@ fun PageIndicator(pageCount: Int, currentPage: Int, modifier: Modifier) {
         repeat(pageCount) {
             IndicatorSingleDot(isSelected = it == currentPage)
         }
-
-
     }
 }
 
