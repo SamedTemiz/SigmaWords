@@ -96,9 +96,7 @@ class MainActivity : ComponentActivity() {
 
                             composable(Screen.Welcome.OnBoard.route) {
                                 // OnBoard Screen
-                                OnboardingScreen(
-//                                    navController = navController
-                                )
+                                OnboardingScreen(navController = navController)
                                 Log.d(TAG, "OnBoarding screen")
                             }
                         }

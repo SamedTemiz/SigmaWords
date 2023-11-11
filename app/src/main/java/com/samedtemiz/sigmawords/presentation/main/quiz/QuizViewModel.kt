@@ -55,7 +55,7 @@ class QuizViewModel @Inject constructor(
     fun createQuiz(questionCount: Int) {
         Log.d(TAG, "Yeni quiz oluşturuluyor.")
         _quiz.value = UiState.Loading
-        
+
         val questions = createQuestions(questionCount = questionCount)
         questions.forEach {
             Log.d(TAG, it.id.toString())
@@ -94,6 +94,8 @@ class QuizViewModel @Inject constructor(
 
     // Result stuff
     fun createResult(data: Quiz) {
+        _result.value = UiState.Loading
+        
         val quizId = data.quizId
         val resultDate = data.date
         val resultSummary = calculateResultSummary(data.questions ?: emptyList())

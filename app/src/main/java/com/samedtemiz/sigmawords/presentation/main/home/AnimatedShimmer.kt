@@ -1,4 +1,4 @@
-package com.samedtemiz.sigmawords.presentation.main.home.component
+package com.samedtemiz.sigmawords.presentation.main.home
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.animation.core.*
