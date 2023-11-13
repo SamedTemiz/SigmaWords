@@ -13,42 +13,57 @@ import com.samedtemiz.sigmawords.data.repository.word.WordRepository
 import com.samedtemiz.sigmawords.util.UiState
 import com.samedtemiz.sigmawords.data.model.Result
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.math.roundToInt
 
 private const val TAG = "HomeViewModel"
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(private val userRepository: UserRepository) : ViewModel() {
+    private val userId = Firebase.auth.uid.toString()
 
     private val _resultState = MutableLiveData<UiState<List<Result>>>()
     val resultState: LiveData<UiState<List<Result>>> = _resultState
 
+    val dailyQuiz = MutableLiveData<UiState<Boolean>>()
+    val successRate: MutableLiveData<UiState<Pair<String, String>>> = MutableLiveData()
+
     init {
+        successRate.value = UiState.Loading
+        dailyQuiz.value = UiState.Loading
         _resultState.value = UiState.Loading
-        _resultState.observeForever {
-            when (it) {
-                is UiState.Success -> {
-                    Log.d(TAG, "Veriler alındı: ${it.data.get(0).quizId}")
-                }
-
-                is UiState.Failure -> {
-                    Log.d(TAG, it.error.toString())
-                }
-
-                else -> {
-                    Log.d(TAG, "Something wrong")
-                }
-            }
-        }
-
-        getResultList()
     }
 
+    fun calculateSuccessRate(list: List<Result>?) {
+        if (!list.isNullOrEmpty()) {
+            val resultCount = list.size
 
-    private fun getResultList() {
+            var totalQuestion = 0
+            var correctCount = 0
+            list.forEach { result ->
+                totalQuestion += result.questionCount ?: 0
+                correctCount += result.correctCount ?: 0
+            }
+
+            val rate = (correctCount * 100).toFloat() / totalQuestion
+            successRate.value = UiState.Success(Pair("${rate.roundToInt()}", "$resultCount"))
+        } else {
+            successRate.value = UiState.Failure("Veri Bulunamadı")
+        }
+    }
+
+    fun checkDailyQuizStatus() {
+        CoroutineScope(Dispatchers.IO).launch {
+            userRepository.checkQuiz(userId = userId, dailyQuiz)
+        }
+    }
+
+    fun getResultList() {
         userRepository.getResultList(
-            userId = Firebase.auth.uid.toString(),
+            userId = userId,
             result = _resultState
         )
     }

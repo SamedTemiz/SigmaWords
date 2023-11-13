@@ -13,6 +13,7 @@ interface UserRepository {
     fun getQuiz(userId: String, quiz: MutableLiveData<UiState<Quiz>>)
     fun addQuiz(userId: String, quiz: Quiz)
     fun updateQuiz(userId: String, quiz: Quiz)
+    fun checkQuiz(userId: String, dailyQuiz: MutableLiveData<UiState<Boolean>>)
 
 
     // Sigma Operations

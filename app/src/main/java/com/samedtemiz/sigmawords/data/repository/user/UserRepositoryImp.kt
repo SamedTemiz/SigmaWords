@@ -50,7 +50,8 @@ class UserRepositoryImp(private val database: FirebaseFirestore) : UserRepositor
             database.collection("UserDatabase").document(userId).collection("Quizzes")
 
         CoroutineScope(Dispatchers.IO).launch {
-            val documentReference = quizzesCollection.document() // Belge eklenmeden önce referans alınır
+            val documentReference =
+                quizzesCollection.document() // Belge eklenmeden önce referans alınır
             val quizId = documentReference.id // Belge kimliği alınır
             val quizWithId = quiz.copy(quizId = quizId) // Belgeye quizId değeri eklenir
 
@@ -80,6 +81,27 @@ class UserRepositoryImp(private val database: FirebaseFirestore) : UserRepositor
                     Log.d(TAG, "Quiz güncelleme hatası: " + it.localizedMessage)
                 }
         }
+    }
+
+    override fun checkQuiz(userId: String, dailyQuiz: MutableLiveData<UiState<Boolean>>) {
+        val path = database.collection("UserDatabase").document(userId).collection("Quizzes")
+
+        path.whereEqualTo("date", CURRENT_DATE)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                if (querySnapshot.isEmpty) {
+                    // Document does not exist
+                    dailyQuiz.postValue(UiState.Success(false))
+                } else {
+                    // Document exists, check the 'solved' field
+                    val solved = querySnapshot.documents.firstOrNull()?.getBoolean("solved") ?: false
+                    dailyQuiz.postValue(UiState.Success(solved))
+                }
+            }
+            .addOnFailureListener { exception ->
+                // Hata durumunda burada işlem yapabilirsiniz
+                dailyQuiz.postValue(UiState.Failure(exception.localizedMessage))
+            }
     }
 
 
@@ -223,6 +245,8 @@ class UserRepositoryImp(private val database: FirebaseFirestore) : UserRepositor
         val userData = hashMapOf(
             "username" to user.username,
             "profilePictureUrl" to user.profilePictureUrl,
+            "email" to user.email,
+            "registerDate" to CURRENT_DATE
         )
 
         val usersRef = database.collection("UserDatabase").document(user.userId)
