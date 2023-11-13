@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.toObject
+import com.google.firebase.firestore.toObjects
 import com.samedtemiz.sigmawords.data.model.Quiz
 import com.samedtemiz.sigmawords.data.model.Result
 import com.samedtemiz.sigmawords.data.model.User
@@ -14,6 +15,7 @@ import com.samedtemiz.sigmawords.util.UiState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 private const val TAG = "UserRepository"
 
@@ -24,250 +26,232 @@ class UserRepositoryImp(private val database: FirebaseFirestore) : UserRepositor
         val quizzesCollection =
             database.collection("UserDatabase").document(userId).collection("Quizzes")
 
-        quizzesCollection.whereEqualTo("date", CURRENT_DATE)
-            .get()
-            .addOnSuccessListener { documents ->
-                if (!documents.isEmpty) {
-                    for (document in documents) {
-                        val quizData = document.toObject<Quiz>()
-                        CoroutineScope(Dispatchers.IO).launch {
-                            quiz.postValue(UiState.Success(quizData))
-                        }
-                    }
-                } else {
-                    CoroutineScope(Dispatchers.IO).launch {
-                        quiz.postValue(UiState.Failure("Quiz bulunamadı."))
-                    }
-                }
-            }
-            .addOnFailureListener { exception ->
-                Log.w(TAG, "Quiz alınırken hata: ", exception)
-            }
-    }
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val documents = quizzesCollection
+                    .whereEqualTo("date", CURRENT_DATE)
+                    .get()
+                    .await()
 
+                if (!documents.isEmpty) {
+                    val quizData = documents.documents[0].toObject<Quiz>()
+                    quiz.postValue(UiState.Success(quizData!!))
+                } else {
+                    quiz.postValue(UiState.Failure("Quiz bulunamadı."))
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "Quiz alınırken hata: ", e)
+                quiz.postValue(UiState.Failure("Quiz alınırken bir hata oluştu: ${e.localizedMessage}"))
+            }
+        }
+    }
     override fun addQuiz(userId: String, quiz: Quiz) {
         val quizzesCollection =
             database.collection("UserDatabase").document(userId).collection("Quizzes")
 
         CoroutineScope(Dispatchers.IO).launch {
-            val documentReference =
-                quizzesCollection.document() // Belge eklenmeden önce referans alınır
-            val quizId = documentReference.id // Belge kimliği alınır
-            val quizWithId = quiz.copy(quizId = quizId) // Belgeye quizId değeri eklenir
+            try {
+                val documentReference =  quizzesCollection.document()
+                val quizId = documentReference.id
+                val quizWithId = quiz.copy(quizId = quizId)
 
-            documentReference.set(quizWithId)
-                .addOnSuccessListener {
-                    Log.d(TAG, "Quiz eklendi: $quizId")
-                }
-                .addOnFailureListener { e ->
-                    Log.w(TAG, "Quiz eklenirken hata oluştu", e)
-                }
+                documentReference.set(quizWithId).await()
+
+                Log.d(TAG, "Quiz eklendi: $quizId")
+            } catch (e: Exception) {
+                Log.w(TAG, "Quiz eklenirken hata oluştu: ${e.localizedMessage}")
+            }
         }
     }
-
-
     override fun updateQuiz(userId: String, quiz: Quiz) {
         val quizzesCollection =
             database.collection("UserDatabase").document(userId).collection("Quizzes")
 
         val quizId = quiz.quizId // Quiz'in kimlik bilgisini al
+
         CoroutineScope(Dispatchers.IO).launch {
-            quizzesCollection.document(quizId!!)
-                .set(quiz)
-                .addOnSuccessListener {
-                    Log.d(TAG, "Quiz güncellendi: $quizId")
-                }
-                .addOnFailureListener {
-                    Log.d(TAG, "Quiz güncelleme hatası: " + it.localizedMessage)
-                }
+            try {
+                quizzesCollection.document(quizId!!)
+                    .set(quiz)
+                    .await()
+
+                Log.d(TAG, "Quiz güncellendi: $quizId")
+            } catch (e: Exception) {
+                Log.w(TAG, "Quiz güncelleme hatası: ${e.localizedMessage}")
+            }
         }
     }
-
     override fun checkQuiz(userId: String, dailyQuiz: MutableLiveData<UiState<Boolean>>) {
         val path = database.collection("UserDatabase").document(userId).collection("Quizzes")
 
         path.whereEqualTo("date", CURRENT_DATE)
             .get()
             .addOnSuccessListener { querySnapshot ->
-                if (querySnapshot.isEmpty) {
-                    // Document does not exist
-                    dailyQuiz.postValue(UiState.Success(false))
-                } else {
-                    // Document exists, check the 'solved' field
-                    val solved = querySnapshot.documents.firstOrNull()?.getBoolean("solved") ?: false
-                    dailyQuiz.postValue(UiState.Success(solved))
-                }
+                val solved = querySnapshot.documents.firstOrNull()?.getBoolean("solved") ?: false
+                dailyQuiz.postValue(UiState.Success(solved))
             }
             .addOnFailureListener { exception ->
                 // Hata durumunda burada işlem yapabilirsiniz
-                dailyQuiz.postValue(UiState.Failure(exception.localizedMessage))
+                dailyQuiz.postValue(UiState.Failure("Quiz kontrol edilirken bir hata oluştu: ${exception.localizedMessage}"))
             }
     }
+
 
 
     // Sigma Operations
-    override fun getUserSigmaWords(
-        userId: String,
-        currentDate: String,
-        result: MutableLiveData<List<Word>>
-    ) {
+    override fun getUserSigmaWords(userId: String, currentDate: String, result: MutableLiveData<List<Word>>) {
         val wordsCollection =
             database.collection("UserDatabase").document(userId).collection("SigmaWords")
 
-        wordsCollection.whereEqualTo("sigmaDate", currentDate)
-            .get()
-            .addOnSuccessListener { documents ->
-                if (!documents.isEmpty) {
-                    val wordList = mutableListOf<Word>()
-                    for (document in documents) {
-                        val word = document.toObject<Word>()
-                        wordList.add(word)
-                    }
-                    CoroutineScope(Dispatchers.IO).launch {
-                        result.postValue(wordList)
-                    }
-                } else {
-                    CoroutineScope(Dispatchers.IO).launch {
-                        result.postValue(emptyList())
-                    }
-                }
-            }
-            .addOnFailureListener { exception ->
-                Log.w(TAG, "Sigma kelimeler alınırken hata: ", exception)
-            }
-    }
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val documents = wordsCollection
+                    .whereEqualTo("sigmaDate", currentDate)
+                    .get()
+                    .await()
 
+                if (!documents.isEmpty) {
+                    val wordList = documents.toObjects<Word>()
+                    result.postValue(wordList)
+                } else {
+                    result.postValue(emptyList())
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "Sigma kelimeler alınırken hata: ", e)
+            }
+        }
+    }
     override fun addSigmaWords(userId: String, sigmaWords: List<Word>) {
         val wordsCollection =
             database.collection("UserDatabase").document(userId).collection("SigmaWords")
+
         CoroutineScope(Dispatchers.IO).launch {
             for (word in sigmaWords) {
                 val wordId = word.id ?: ""
 
-                wordsCollection.document(wordId).set(word)
+                try {
+                    wordsCollection.document(wordId).set(word).await()
+                } catch (e: Exception) {
+                    Log.w(TAG, "Sigma Word eklenirken hata: ${e.localizedMessage}")
+                }
             }
         }
     }
-
     override fun deleteSigmaWords(userId: String, forDeleteSigmaWords: List<Word>) {
         val wordsCollection =
             database.collection("UserDatabase").document(userId).collection("SigmaWords")
+
         CoroutineScope(Dispatchers.IO).launch {
             for (word in forDeleteSigmaWords) {
                 val wordId = word.id ?: ""
 
-                wordsCollection.document(wordId).delete()
+                try {
+                    wordsCollection.document(wordId).delete().await()
+                } catch (e: Exception) {
+                    Log.w(TAG, "Sigma Word silinirken hata: ${e.localizedMessage}")
+                }
             }
         }
     }
+
 
 
     // Quiz Result Operations - Progress
     override fun addResult(userId: String, result: Result) {
         val quizzesCollection =
             database.collection("UserDatabase").document(userId).collection("Results")
+
         CoroutineScope(Dispatchers.IO).launch {
-            quizzesCollection.add(result)
-                .addOnSuccessListener { documentReference ->
-                    Log.d(TAG, "Result eklendi: ${documentReference.id}")
-                }
-                .addOnFailureListener { e ->
-                    Log.w(TAG, "Result eklenirken hata:", e)
-                }
+            try {
+                val documentReference = quizzesCollection.add(result).await()
+                Log.d(TAG, "Result eklendi: ${documentReference.id}")
+            } catch (e: Exception) {
+                Log.w(TAG, "Result eklenirken hata: ${e.localizedMessage}")
+            }
         }
     }
-
-    override fun getCurrentResult(
-        userId: String,
-        quizId: String,
-        result: MutableLiveData<UiState<Result>>
-    ) {
+    override fun getCurrentResult(userId: String, quizId: String, result: MutableLiveData<UiState<Result>>) {
         val quizzesCollection =
             database.collection("UserDatabase").document(userId).collection("Results")
 
-        quizzesCollection.whereEqualTo("quizId", quizId)
-            .get()
-            .addOnSuccessListener { documents ->
-                if (!documents.isEmpty) {
-                    for (document in documents) {
-                        val resultData = document.toObject<Result>()
-                        CoroutineScope(Dispatchers.IO).launch {
-                            result.postValue(UiState.Success(resultData))
-                        }
-                    }
-                } else {
-                    CoroutineScope(Dispatchers.IO).launch {
-                        result.postValue(UiState.Failure("Result bulunamadı."))
-                    }
-                }
-            }
-            .addOnFailureListener { e ->
-                CoroutineScope(Dispatchers.IO).launch {
-                    result.postValue(UiState.Failure("Error getting result: $e"))
-                }
-            }
-    }
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val documents = quizzesCollection
+                    .whereEqualTo("quizId", quizId)
+                    .get()
+                    .await()
 
+                if (!documents.isEmpty) {
+                    val resultData = documents.documents[0].toObject<Result>()
+                    result.postValue(UiState.Success(resultData!!))
+                } else {
+                    result.postValue(UiState.Failure("Result bulunamadı."))
+                }
+            } catch (e: Exception) {
+                result.postValue(UiState.Failure("Error getting result: ${e.localizedMessage}"))
+            }
+        }
+    }
     override fun getResultList(userId: String, result: MutableLiveData<UiState<List<Result>>>) {
         val quizzesCollection =
             database.collection("UserDatabase").document(userId).collection("Results")
 
-        quizzesCollection.orderBy("resultDate", Query.Direction.DESCENDING)
-            .get()
-            .addOnSuccessListener { documents ->
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val documents = quizzesCollection
+                    .orderBy("resultDate", Query.Direction.DESCENDING)
+                    .get()
+                    .await()
+
                 if (!documents.isEmpty) {
-                    val resultList = mutableListOf<Result>() // Result tutan list
-
-                    for (document in documents) {
-                        val resultData = document.toObject<Result>()
-                        resultList.add(resultData)
-                    }
-                    CoroutineScope(Dispatchers.IO).launch {
-                        result.postValue(UiState.Success(resultList))
-                    }
-
+                    val resultList = documents.toObjects<Result>()
+                    result.postValue(UiState.Success(resultList))
                 } else {
-                    CoroutineScope(Dispatchers.IO).launch {
-                        result.postValue(UiState.Failure("Result listesi oluşturuLAMADI."))
-                    }
+                    result.postValue(UiState.Failure("Result listesi oluşturulamadı."))
                 }
-            }
-            .addOnFailureListener { e ->
-                CoroutineScope(Dispatchers.IO).launch {
-                    result.postValue(UiState.Failure("Error getting result: $e"))
-                }
-            }
-    }
-
-
-    // User Database Operations
-    override fun createUserDatabase(user: User) {
-        val userData = hashMapOf(
-            "username" to user.username,
-            "profilePictureUrl" to user.profilePictureUrl,
-            "email" to user.email,
-            "registerDate" to CURRENT_DATE
-        )
-
-        val usersRef = database.collection("UserDatabase").document(user.userId)
-
-        usersRef.get().addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                val document = task.result
-                if (document != null && document.exists()) {
-
-                } else {
-                    database.collection("UserDatabase")
-                        .document(user.userId)
-                        .set(userData)
-                        .addOnSuccessListener {
-                            Log.d(TAG, "Kullanıcı veri tabanı oluşturuldu.")
-                        }
-                        .addOnFailureListener { e -> Log.w(TAG, "Error writing document", e) }
-                }
-            } else {
-                Log.d(TAG, "get failed with ", task.exception)
+            } catch (e: Exception) {
+                result.postValue(UiState.Failure("Error getting result: ${e.localizedMessage}"))
             }
         }
     }
+
+    // GERİ ALMA BURAYA KADAR
+
+    // User Database Operations
+    override fun createUserDatabase(user: User) {
+        val userData = user.copy(registerDate = CURRENT_DATE)
+        val userId = user.userId ?: ""
+
+        val userDocumentReference = database.collection("UserDatabase").document(userId)
+        CoroutineScope(Dispatchers.IO).launch {
+            userDocumentReference
+                .set(userData)
+                .addOnSuccessListener {
+                    Log.d(TAG, "Kullanıcı veritabanı oluşturuldu.")
+                }
+                .addOnFailureListener { e ->
+                    Log.w(TAG, "Veritabanına yazma hatası", e)
+                }
+        }
+    }
+    override fun getUserDatabase(userId: String, userData: MutableLiveData<UiState<User>>) {
+        val userRef = database.collection("UserDatabase").document(userId)
+
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val documentSnapshot = userRef.get().await()
+
+                if (documentSnapshot.exists()) {
+                    val user = documentSnapshot.toObject<User>()
+                    userData.postValue(UiState.Success(user!!))
+                } else {
+                    userData.postValue(UiState.Failure("User bilgisi alınamadı"))
+                }
+            } catch (exception: Exception) {
+                // Hata durumunda
+                userData.postValue(UiState.Failure(exception.localizedMessage))
+            }
+        }
+    }
+
 }
