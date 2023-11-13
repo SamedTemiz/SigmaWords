@@ -11,6 +11,7 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.samedtemiz.sigmawords.R
 import com.samedtemiz.sigmawords.data.model.User
+import com.samedtemiz.sigmawords.util.Constant.CURRENT_DATE
 import kotlinx.coroutines.tasks.await
 import java.util.concurrent.CancellationException
 
@@ -47,7 +48,8 @@ class GoogleAuthUiClient(
                     User(
                         userId = uid,
                         username = displayName,
-                        profilePictureUrl = photoUrl?.toString()
+                        profilePictureUrl = photoUrl?.toString(),
+                        email = email
                     )
                 },
                 errorMessage = null
@@ -76,7 +78,8 @@ class GoogleAuthUiClient(
         User(
             userId = uid,
             username = displayName,
-            profilePictureUrl = photoUrl?.toString()
+            profilePictureUrl = photoUrl?.toString(),
+            email = email
         )
     }
 
