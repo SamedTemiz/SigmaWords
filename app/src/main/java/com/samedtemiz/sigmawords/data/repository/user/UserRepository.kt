@@ -30,4 +30,5 @@ interface UserRepository {
 
     // User Database Operations
     fun createUserDatabase(user: User)
+    fun getUserDatabase(userId: String, userData: MutableLiveData<UiState<User>>)
 }

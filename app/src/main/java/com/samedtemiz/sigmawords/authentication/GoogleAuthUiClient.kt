@@ -79,7 +79,7 @@ class GoogleAuthUiClient(
             userId = uid,
             username = displayName,
             profilePictureUrl = photoUrl?.toString(),
-            email = email
+            email = email,
         )
     }
 

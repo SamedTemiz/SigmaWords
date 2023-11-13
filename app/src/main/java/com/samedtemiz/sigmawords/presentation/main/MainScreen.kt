@@ -53,6 +53,7 @@ import com.samedtemiz.sigmawords.presentation.Screen
 import com.samedtemiz.sigmawords.presentation.main.home.HomeScreen
 import com.samedtemiz.sigmawords.presentation.main.home.HomeViewModel
 import com.samedtemiz.sigmawords.presentation.main.profile.ProfileScreen
+import com.samedtemiz.sigmawords.presentation.main.profile.ProfileViewModel
 import com.samedtemiz.sigmawords.presentation.main.quiz.QuizScreen
 import com.samedtemiz.sigmawords.presentation.main.quiz.QuizViewModel
 import kotlinx.coroutines.Dispatchers
@@ -159,11 +160,10 @@ fun MainScreen(
                         }
                     }
 
+                    val viewModel: ProfileViewModel = hiltViewModel()
                     ProfileScreen(
-                        userData = userData,
-                        onSignOut = {
-                            signOutTrigger = true
-                        }
+                        viewModel = viewModel,
+                        onSignOut = { signOutTrigger = true }
                     )
                 }
             }
