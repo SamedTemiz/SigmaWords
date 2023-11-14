@@ -118,7 +118,6 @@ class MainActivity : ComponentActivity() {
                                             viewModel.onSignInResult(signInResult)
                                         }
                                     }
-
                                 }
                             )
 
@@ -132,7 +131,7 @@ class MainActivity : ComponentActivity() {
                             LaunchedEffect(key1 = state.isSignInSuccessful) {
                                 if (state.isSignInSuccessful) {
                                     viewModel.createUserDatabaseIfNotExist(googleAuthUiClient.getSignedInUser()!!)
-                                    Log.d(TAG, "Sign in successful.")
+                                    Log.d(TAG, "Giriş başarılı.")
 
                                     navController.popBackStack()
                                     navController.navigate(Screen.Main.route)

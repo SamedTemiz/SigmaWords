@@ -22,7 +22,6 @@ android {
             useSupportLibrary = true
         }
     }
-
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -126,4 +125,7 @@ dependencies {
 
     // Glide
     implementation("com.github.bumptech.glide:compose:1.0.0-beta01")
+
+    // Markdown
+    implementation("com.github.mukeshsolanki:MarkdownView-Android:2.0.0")
 }
