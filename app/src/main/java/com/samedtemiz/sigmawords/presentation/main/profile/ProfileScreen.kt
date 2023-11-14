@@ -1,6 +1,7 @@
 package com.samedtemiz.sigmawords.presentation.main.profile
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
+import android.text.Selection
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -21,7 +22,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -36,6 +39,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -52,8 +58,10 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
+import com.mukesh.MarkDown
 import com.samedtemiz.sigmawords.R
 import com.samedtemiz.sigmawords.data.model.User
+import com.samedtemiz.sigmawords.presentation.Screen
 import com.samedtemiz.sigmawords.presentation.main.home.formatDate
 import com.samedtemiz.sigmawords.presentation.ui.theme.SigmaWordsTheme
 import com.samedtemiz.sigmawords.util.UiState
@@ -146,8 +154,9 @@ fun ProfileScreen(
                             .weight(1f)
                     ) {
                         InfoCard(
-                            title = "Sigma metodolojisi nedir?",
-                            painterID = R.drawable.sigma_fill
+                            painterID = InformationItems.SigmaNedir.icon,
+                            title = InformationItems.SigmaNedir.title,
+                            description = InformationItems.SigmaNedir.description
                         )
                     }
 
@@ -159,8 +168,9 @@ fun ProfileScreen(
                             .weight(1f)
                     ) {
                         InfoCard(
-                            title = "Uygulama algoritması",
-                            painterID = R.drawable.connection
+                            painterID = InformationItems.Algoritma.icon,
+                            title = InformationItems.Algoritma.title,
+                            description = InformationItems.Algoritma.description
                         )
                     }
                 }
@@ -179,8 +189,9 @@ fun ProfileScreen(
                             .weight(1f)
                     ) {
                         InfoCard(
-                            title = "Kaynaklar",
-                            painterID = R.drawable.document
+                            painterID = InformationItems.Kaynaklar.icon,
+                            title = InformationItems.Kaynaklar.title,
+                            description = InformationItems.Kaynaklar.description
                         )
                     }
 
@@ -192,8 +203,9 @@ fun ProfileScreen(
                             .weight(1f)
                     ) {
                         InfoCard(
-                            title = "Geliştirici hakkında",
-                            painterID = R.drawable.about
+                            painterID = InformationItems.Gelistirici.icon,
+                            title = InformationItems.Gelistirici.title,
+                            description = InformationItems.Gelistirici.description
                         )
                     }
                 }
@@ -207,9 +219,11 @@ fun ProfileScreen(
 
 @Composable
 fun InfoCard(
+    painterID: Int,
     title: String,
-    painterID: Int
+    description: String
 ) {
+    var showDialog by remember { mutableStateOf(false) }
     Card(
         shape = RoundedCornerShape(7.dp),
         colors = CardDefaults.cardColors(
@@ -217,7 +231,9 @@ fun InfoCard(
             contentColor = MaterialTheme.colorScheme.onPrimary
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
+            .clickable { showDialog = true }
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -238,6 +254,52 @@ fun InfoCard(
                     .padding(5.dp)
             )
         }
+    }
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = {
+                Text(title)
+            },
+            text = {
+                SelectionContainer {
+                    MarkDown(
+                        text = description,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(RoundedCornerShape(10.dp)),
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = { showDialog = false }
+                ) {
+                    Text("Tamam")
+                }
+            }
+        )
+    }
+}
+
+@Composable
+fun InfoAlertDialog(
+    title: String,
+    description: String
+) {
+
+}
+
+@Preview
+@Preview(uiMode = UI_MODE_NIGHT_YES)
+@Composable
+fun AlertPreview() {
+    SigmaWordsTheme {
+        InfoAlertDialog(
+            title = "Bilgilendirme",
+            description = "burada açıklama kısmı olacak ve biraz uzun oalbilir o tüznden olabildiğince açıklayıcı ve okunur bir yazı olmalıs."
+        )
     }
 }
 

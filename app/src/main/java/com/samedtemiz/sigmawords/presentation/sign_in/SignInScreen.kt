@@ -68,16 +68,10 @@ fun SignInScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .fillMaxHeight(0.4f)
-                .padding(horizontal = 16.dp)
-                .shadow(
-                    elevation = 25.dp,
-                    ambientColor = MaterialTheme.colorScheme.primary,
-                    spotColor = MaterialTheme.colorScheme.onBackground,
-                    shape = RoundedCornerShape(20.dp)
-                ),
+                .padding(horizontal = 16.dp),
             shape = RoundedCornerShape(20.dp),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
-            elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 50.dp),
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -96,16 +90,26 @@ fun SignInScreen(
                         .padding(top = 16.dp)
                 )
 
-                Button(
-                    onClick = { onSignInClick() },
+                Card(
                     modifier = Modifier
                         .size(100.dp)
-                        .padding(),  //avoid the oval shape
+                        .padding(),
                     shape = CircleShape,
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.onSecondaryContainer)
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.onTertiaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onBackground
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 50.dp),
                 ) {
-                    Text(text = "GİRİŞ", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    Button(
+                        onClick = { onSignInClick() },
+                        modifier = Modifier
+                            .fillMaxSize(),
+                    ) {
+                        Text(text = "GİRİŞ", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    }
                 }
+
             }
         }
     }

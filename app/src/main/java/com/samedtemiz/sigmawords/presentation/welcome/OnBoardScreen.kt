@@ -214,7 +214,7 @@ fun ButtonsSection(
     ) {
         if (pagerState.currentPage != 2) {
             Text(
-                text = "Next",
+                text = "İleri",
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .clickable {
@@ -228,7 +228,7 @@ fun ButtonsSection(
                 color = MaterialTheme.colorScheme.onBackground
             )
             Text(
-                text = "Back",
+                text = "Geri",
                 modifier = Modifier
                     .align(Alignment.BottomStart)
                     .clickable {
@@ -257,7 +257,7 @@ fun ButtonsSection(
                 )
             ) {
                 Text(
-                    text = "Get Started",
+                    text = "Başlayalım",
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onPrimary
