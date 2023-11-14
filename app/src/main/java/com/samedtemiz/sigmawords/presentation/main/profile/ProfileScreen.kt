@@ -88,7 +88,9 @@ fun ProfileScreen(
         Column(
             Modifier
                 .fillMaxSize()
-                .padding(24.dp)
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
             userState?.let { state ->
                 when (state) {

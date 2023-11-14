@@ -99,7 +99,7 @@ fun SignInScreen(
                         containerColor = MaterialTheme.colorScheme.onTertiaryContainer,
                         contentColor = MaterialTheme.colorScheme.onBackground
                     ),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 50.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
                 ) {
                     Button(
                         onClick = { onSignInClick() },
