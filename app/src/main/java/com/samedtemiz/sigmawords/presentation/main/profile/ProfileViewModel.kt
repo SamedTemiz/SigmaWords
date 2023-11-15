@@ -1,5 +1,7 @@
 package com.samedtemiz.sigmawords.presentation.main.profile
 
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.firebase.Firebase
@@ -14,7 +16,7 @@ private const val TAG = "ProfileViewModel"
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(private val userRepository: UserRepository) : ViewModel() {
-
+    private val userId: State<String> = mutableStateOf(Firebase.auth.currentUser?.uid.toString())
     val user: MutableLiveData<UiState<User>> = MutableLiveData()
 
     init {
@@ -22,6 +24,14 @@ class ProfileViewModel @Inject constructor(private val userRepository: UserRepos
     }
 
     fun getUserData() {
-        userRepository.getUserDatabase(userId = Firebase.auth.uid.toString(), userData = user)
+        userRepository.getUserDatabase(userId = userId.value, userData = user)
+    }
+
+    fun resetUserData(): Boolean {
+        return userRepository.deleteUserDatabase(userId = userId.value)
+    }
+
+    fun deleteUserData() : Boolean{
+        return userRepository.deleteUser(userId = userId.value)
     }
 }

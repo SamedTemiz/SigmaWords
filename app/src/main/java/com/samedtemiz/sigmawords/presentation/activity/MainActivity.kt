@@ -60,10 +60,6 @@ class MainActivity : ComponentActivity() {
         )
     }
 
-    private val viewModel by lazy {
-        ViewModelProvider(this, defaultViewModelProviderFactory)[HomeViewModel::class.java]
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -151,6 +147,7 @@ class MainActivity : ComponentActivity() {
                                             ).build()
                                         )
                                     }
+
                                 }
                             )
 

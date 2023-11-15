@@ -1,6 +1,8 @@
 package com.samedtemiz.sigmawords.presentation.main.home
 
 import android.util.Log
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -23,7 +25,7 @@ private const val TAG = "HomeViewModel"
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(private val userRepository: UserRepository) : ViewModel() {
-    private val userId = Firebase.auth.uid.toString()
+    private val userId: State<String> = mutableStateOf(Firebase.auth.currentUser?.uid.toString())
 
     private val _resultState = MutableLiveData<UiState<List<Result>>>()
     val resultState: LiveData<UiState<List<Result>>> = _resultState
@@ -57,13 +59,13 @@ class HomeViewModel @Inject constructor(private val userRepository: UserReposito
 
     fun checkDailyQuizStatus() {
         CoroutineScope(Dispatchers.IO).launch {
-            userRepository.checkQuiz(userId = userId, dailyQuiz)
+            userRepository.checkQuiz(userId = userId.value, dailyQuiz)
         }
     }
 
     fun getResultList() {
         userRepository.getResultList(
-            userId = userId,
+            userId = userId.value,
             result = _resultState
         )
     }
