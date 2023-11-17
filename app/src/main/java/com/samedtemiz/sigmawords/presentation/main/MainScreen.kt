@@ -1,10 +1,10 @@
 package com.samedtemiz.sigmawords.presentation.main
 
 import android.annotation.SuppressLint
-import android.util.Log
+import android.app.Activity
+import android.content.Intent
 import android.widget.Toast
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
@@ -24,7 +24,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,14 +31,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
-import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -50,6 +45,7 @@ import com.exyte.animatednavbar.animation.balltrajectory.Parabolic
 import com.exyte.animatednavbar.animation.indendshape.Height
 import com.samedtemiz.sigmawords.authentication.GoogleAuthUiClient
 import com.samedtemiz.sigmawords.presentation.Screen
+import com.samedtemiz.sigmawords.presentation.activity.MainActivity
 import com.samedtemiz.sigmawords.presentation.main.home.HomeScreen
 import com.samedtemiz.sigmawords.presentation.main.home.HomeViewModel
 import com.samedtemiz.sigmawords.presentation.main.profile.ProfileScreen
@@ -59,6 +55,7 @@ import com.samedtemiz.sigmawords.presentation.main.quiz.QuizViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
+private const val TAG = "Main Screen"
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -139,19 +136,17 @@ fun MainScreen(
 
                     var signOutTrigger by remember { mutableStateOf(false) }
                     if (signOutTrigger) {
-                        LaunchedEffect(true) {
-                            // Coroutine içerisinde çalışacak işlemler
+                        LaunchedEffect(signOutTrigger) {
                             try {
                                 googleAuthUiClient.singOut()
                                 withContext(Dispatchers.Main) {
                                     Toast.makeText(
                                         context,
-                                        "Sign out",
+                                        "Çıkış başarılı",
                                         Toast.LENGTH_LONG
                                     ).show()
                                 }
                                 navController.popBackStack()
-
                                 mainNavController.popBackStack()
                                 mainNavController.navigate(Screen.Welcome.route)
                             } catch (e: Exception) {
@@ -160,10 +155,41 @@ fun MainScreen(
                         }
                     }
 
+                    var deleteAccount by remember { mutableStateOf(false) }
+                    if (deleteAccount) {
+                        LaunchedEffect(deleteAccount) {
+                            try {
+                                googleAuthUiClient.deleteUser()
+                                googleAuthUiClient.singOut()
+                                withContext(Dispatchers.Main) {
+                                    Toast.makeText(
+                                        context,
+                                        "Hesap başarıyla silindi",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
+//                                navController.popBackStack()
+//                                mainNavController.popBackStack()
+//                                mainNavController.navigate(Screen.Welcome.route)
+
+                                val intent = Intent(context, MainActivity::class.java)
+                                // Eski activity'yi sonlandır
+                                (context as? Activity)?.finish()
+                                // Activity'yi tekrar başlat
+                                context.startActivity(intent)
+
+                            } catch (e: Exception) {
+                                // Hata yönetimi
+                            }
+                        }
+                    }
+
+
                     val viewModel: ProfileViewModel = hiltViewModel()
                     ProfileScreen(
                         viewModel = viewModel,
-                        onSignOut = { signOutTrigger = true }
+                        onSignOut = { signOutTrigger = true },
+                        onDeleteAccount = { deleteAccount = true }
                     )
                 }
             }

@@ -2,6 +2,7 @@ package com.samedtemiz.sigmawords.data.repository.user
 
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
+import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.toObject
@@ -215,7 +216,7 @@ class UserRepositoryImp(private val database: FirebaseFirestore) : UserRepositor
         }
     }
 
-    // GERİ ALMA BURAYA KADAR
+
 
     // User Database Operations
     override fun createUserDatabase(user: User) {
@@ -251,6 +252,57 @@ class UserRepositoryImp(private val database: FirebaseFirestore) : UserRepositor
                 // Hata durumunda
                 userData.postValue(UiState.Failure(exception.localizedMessage))
             }
+        }
+    }
+    override fun deleteUserDatabase(userId: String): Boolean {
+        val userRef = database.collection("UserDatabase").document(userId)
+
+        // Belirli koleksiyonları boşaltmak istediğimizde
+        val collectionsToDelete = listOf("Quizzes", "Results", "SigmaWords")
+
+        // Her koleksiyon için işlemi gerçekleştir
+        collectionsToDelete.forEach { collectionName ->
+            val collectionRef = userRef.collection(collectionName)
+            deleteCollection(collectionRef)
+        }
+
+        return true
+    }
+    private fun deleteCollection(collection: CollectionReference) {
+        val batchSize = 500 // Toplu işlem boyutu, isteğe bağlı olarak ayarlanabilir
+        val query = collection.limit(batchSize.toLong())
+
+        query.get().addOnSuccessListener { documents ->
+            if (documents.size() == 0) {
+                // Koleksiyon boş, işlemi sonlandır
+                return@addOnSuccessListener
+            }
+
+            // Dokümanları sil
+            for (document in documents) {
+                document.reference.delete()
+            }
+
+            // Özyinelemeli olarak devam et
+            deleteCollection(collection)
+        }
+    }
+    override fun deleteUser(userId: String): Boolean {
+        var result = false
+        try {
+            // Belirtilen kullanıcı belgesini sil
+            database.collection("UserDatabase").document(userId)
+                .delete()
+                .addOnSuccessListener {
+                    result = true
+                }
+                .addOnFailureListener { e ->
+                    result = false
+                }
+            return result
+        } catch (e: Exception) {
+            // Hata yönetimi
+            return false
         }
     }
 

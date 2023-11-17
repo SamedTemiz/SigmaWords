@@ -1,12 +1,7 @@
 package com.samedtemiz.sigmawords.presentation.main.profile
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Done
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.ui.graphics.vector.ImageVector
 import com.samedtemiz.sigmawords.R
-import com.samedtemiz.sigmawords.presentation.Screen
+
 
 enum class InformationItems(
     val icon: Int,

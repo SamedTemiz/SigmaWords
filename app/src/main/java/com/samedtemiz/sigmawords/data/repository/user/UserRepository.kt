@@ -28,7 +28,9 @@ interface UserRepository {
     fun getResultList(userId: String, result: MutableLiveData<UiState<List<Result>>>)
 
 
-    // User Database Operations
+    // User Operations
     fun createUserDatabase(user: User)
     fun getUserDatabase(userId: String, userData: MutableLiveData<UiState<User>>)
+    fun deleteUserDatabase(userId: String) : Boolean
+    fun deleteUser(userId: String) : Boolean
 }

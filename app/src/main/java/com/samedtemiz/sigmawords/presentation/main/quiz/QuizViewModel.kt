@@ -1,6 +1,8 @@
 package com.samedtemiz.sigmawords.presentation.main.quiz
 
 import android.util.Log
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -21,13 +23,13 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 private const val TAG = "QuizViewModel"
-private val userId = Firebase.auth.uid.toString()
 
 @HiltViewModel
 class QuizViewModel @Inject constructor(
     private val wordRepository: WordRepository,
     private val userRepository: UserRepository
 ) : ViewModel() {
+    private val userId: State<String> = mutableStateOf(Firebase.auth.currentUser?.uid.toString())
 
     private val _words = MutableLiveData<List<Word>>()
     val words: LiveData<List<Word>> = _words
@@ -45,7 +47,7 @@ class QuizViewModel @Inject constructor(
         _quiz.value = UiState.Loading
 
         try {
-            userRepository.getQuiz(userId = userId, quiz = _quiz)
+            userRepository.getQuiz(userId = userId.value, quiz = _quiz)
         } catch (e: Exception) {
             Log.d(TAG, e.message.toString())
         }
@@ -70,9 +72,9 @@ class QuizViewModel @Inject constructor(
         )
 
         try {
-            userRepository.addQuiz(userId, quiz)
+            userRepository.addQuiz(userId.value, quiz)
             Log.d(TAG, "Veriler işleniyor.")
-            userRepository.getQuiz(userId, _quiz)
+            userRepository.getQuiz(userId.value, _quiz)
             Log.d(TAG, "Quiz oluşturuldu.")
         } catch (e: Exception) {
             Log.d(TAG, e.message.toString())
@@ -114,8 +116,8 @@ class QuizViewModel @Inject constructor(
         Log.d(TAG, "Result oluşturuluyor.")
 
         try {
-            userRepository.updateQuiz(userId = userId, quiz = data)
-            userRepository.addResult(userId = userId, result = result)
+            userRepository.updateQuiz(userId = userId.value, quiz = data)
+            userRepository.addResult(userId = userId.value, result = result)
 
             addSigmaWords(resultSummary.correctAnswers)
             deleteSigmaWords(resultSummary.wrongAnswers)
@@ -126,7 +128,7 @@ class QuizViewModel @Inject constructor(
         Log.d(TAG, "Quiz solved durumu değiştirildi.")
     }
     fun getCurrentResult(quizId: String) {
-        userRepository.getCurrentResult(userId = userId, quizId = quizId, _result)
+        userRepository.getCurrentResult(userId = userId.value, quizId = quizId, _result)
     }
 
     // Sigma stuff
@@ -135,7 +137,7 @@ class QuizViewModel @Inject constructor(
         val sigmaWords = sigmaOperations.calculateSigma(correctAnswers)
 
         try {
-            userRepository.addSigmaWords(userId = userId, sigmaWords = sigmaWords)
+            userRepository.addSigmaWords(userId = userId.value, sigmaWords = sigmaWords)
             Log.d(TAG, "Sigma kelimeleri eklendi.")
         } catch (e: Exception) {
             Log.d(TAG, e.message.toString())
@@ -143,7 +145,7 @@ class QuizViewModel @Inject constructor(
     }
     private fun deleteSigmaWords(wrongAnswers: List<Word>) {
         try {
-            userRepository.deleteSigmaWords(userId = userId, forDeleteSigmaWords = wrongAnswers)
+            userRepository.deleteSigmaWords(userId = userId.value, forDeleteSigmaWords = wrongAnswers)
             Log.d(TAG, "Sigma kelimeleri silindi.")
         } catch (e: Exception) {
             Log.d(TAG, e.message.toString())
@@ -155,6 +157,14 @@ class QuizViewModel @Inject constructor(
         Log.d(TAG, "Words fetch çalıştı.")
         wordRepository.getWords(_words, wordsListName)
         Log.d(TAG, "Sigma words fetch çalıştı.")
-        userRepository.getUserSigmaWords(userId = userId, currentDate = CURRENT_DATE, _sigmaWords)
+        userRepository.getUserSigmaWords(userId = userId.value, currentDate = CURRENT_DATE, _sigmaWords)
+    }
+
+    // State'leri sıfırla
+    fun resetState() {
+        _words.value = emptyList()
+        _sigmaWords.value = emptyList()
+        _quiz.value = UiState.Loading
+        _result.value = UiState.Loading
     }
 }
