@@ -1,17 +1,13 @@
 package com.samedtemiz.sigmawords.presentation.main.home
 
-import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
-import com.samedtemiz.sigmawords.data.model.Word
 import com.samedtemiz.sigmawords.data.repository.user.UserRepository
-import com.samedtemiz.sigmawords.data.repository.word.WordRepository
 import com.samedtemiz.sigmawords.util.UiState
 import com.samedtemiz.sigmawords.data.model.Result
 import dagger.hilt.android.lifecycle.HiltViewModel

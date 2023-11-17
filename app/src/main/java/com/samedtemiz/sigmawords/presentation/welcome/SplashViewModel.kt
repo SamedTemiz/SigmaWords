@@ -8,7 +8,6 @@ import androidx.lifecycle.viewModelScope
 import com.samedtemiz.sigmawords.data.DataStoreRepository
 import com.samedtemiz.sigmawords.presentation.Screen
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 

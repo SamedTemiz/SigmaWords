@@ -7,10 +7,6 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.toObject
 import com.google.firebase.firestore.toObjects
-import com.google.firebase.functions.FirebaseFunctions
-import com.google.firebase.functions.functions
-import com.google.firebase.functions.ktx.functions
-import com.google.firebase.ktx.Firebase
 import com.samedtemiz.sigmawords.data.model.Quiz
 import com.samedtemiz.sigmawords.data.model.Result
 import com.samedtemiz.sigmawords.data.model.User

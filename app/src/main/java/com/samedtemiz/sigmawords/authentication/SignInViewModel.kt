@@ -4,8 +4,6 @@ import android.content.ContentValues.TAG
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.firebase.Firebase
-import com.google.firebase.auth.auth
 import com.samedtemiz.sigmawords.data.model.User
 import com.samedtemiz.sigmawords.data.repository.user.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel

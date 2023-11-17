@@ -8,7 +8,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
-import com.samedtemiz.sigmawords.authentication.SignInState
 import com.samedtemiz.sigmawords.data.model.Question
 import com.samedtemiz.sigmawords.data.model.Quiz
 import com.samedtemiz.sigmawords.data.model.Word
@@ -21,7 +20,6 @@ import com.samedtemiz.sigmawords.presentation.main.quiz.extensions.QuestionCreat
 import com.samedtemiz.sigmawords.presentation.main.quiz.extensions.SigmaOperations
 import com.samedtemiz.sigmawords.presentation.main.quiz.extensions.calculateResultSummary
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
 private const val TAG = "QuizViewModel"
