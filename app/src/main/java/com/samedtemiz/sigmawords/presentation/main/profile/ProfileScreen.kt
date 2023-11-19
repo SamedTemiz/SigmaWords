@@ -102,7 +102,7 @@ fun ProfileScreen(
                         ) {
                             ProfileResume(
                                 user = state.data,
-                                onSignOut = {  },
+                                onSignOut = { onSignOut() },
                                 onDeleteAccount = { onDeleteAccount() },
                                 viewModel
                             )
