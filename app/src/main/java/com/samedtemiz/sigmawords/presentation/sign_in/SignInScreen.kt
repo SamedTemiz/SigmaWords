@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.airbnb.lottie.compose.LottieAnimation
@@ -31,6 +32,17 @@ import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.samedtemiz.sigmawords.R
 import com.samedtemiz.sigmawords.authentication.SignInState
+import com.samedtemiz.sigmawords.presentation.ui.theme.SigmaWordsTheme
+
+@Preview(widthDp = 360, heightDp = 780)
+@Composable
+fun PreviewSign(){
+    SigmaWordsTheme {
+        SignInScreen(state = SignInState()) {
+            
+        }
+    }
+}
 
 @Composable
 fun SignInScreen(
@@ -83,7 +95,7 @@ fun SignInScreen(
 
                 Card(
                     modifier = Modifier
-                        .size(100.dp)
+                        .fillMaxSize(0.50f)
                         .padding(),
                     shape = CircleShape,
                     colors = CardDefaults.cardColors(
