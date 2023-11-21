@@ -17,6 +17,7 @@
 - Coroutines
 - LiveData
 - Firebase: FireStore/Authentication
+- Room Database
 - Jetpack Compose
 - Navigation
 - Lottie/Glide/Markdown
