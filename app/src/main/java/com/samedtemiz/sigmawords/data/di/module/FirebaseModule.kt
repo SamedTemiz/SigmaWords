@@ -1,4 +1,4 @@
-package com.samedtemiz.sigmawords.di.module
+package com.samedtemiz.sigmawords.data.di.module
 
 import com.google.firebase.firestore.FirebaseFirestore
 import dagger.Module
