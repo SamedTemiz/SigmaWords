@@ -1,10 +1,15 @@
 package com.samedtemiz.sigmawords.data.repository.word
 
-import androidx.lifecycle.MutableLiveData
+import com.samedtemiz.sigmawords.data.dao.WordDao
 import com.samedtemiz.sigmawords.data.model.Word
+import javax.inject.Inject
 
-interface WordRepository {
 
-    fun getWords(result: MutableLiveData<List<Word>>, wordsListName: String)
-    fun getWordWithId(id: String, result: MutableLiveData<Word>, wordsListName: String)
+class WordRepository @Inject constructor(private val wordDao: WordDao) {
+
+    suspend fun insertAllWords(words: List<Word>){
+        wordDao.insertAll(words = words)
+    }
+
+    fun getAllWords() = wordDao.getAllWords()
 }

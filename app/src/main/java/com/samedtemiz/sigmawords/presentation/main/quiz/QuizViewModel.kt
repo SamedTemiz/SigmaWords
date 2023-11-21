@@ -6,20 +6,22 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.samedtemiz.sigmawords.data.model.Question
 import com.samedtemiz.sigmawords.data.model.Quiz
 import com.samedtemiz.sigmawords.data.model.Word
 import com.samedtemiz.sigmawords.data.repository.user.UserRepository
-import com.samedtemiz.sigmawords.data.repository.word.WordRepository
 import com.samedtemiz.sigmawords.util.Constant.CURRENT_DATE
 import com.samedtemiz.sigmawords.util.UiState
 import com.samedtemiz.sigmawords.data.model.Result
+import com.samedtemiz.sigmawords.data.repository.word.WordRepository
 import com.samedtemiz.sigmawords.presentation.main.quiz.extensions.QuestionCreator
 import com.samedtemiz.sigmawords.presentation.main.quiz.extensions.SigmaOperations
 import com.samedtemiz.sigmawords.presentation.main.quiz.extensions.calculateResultSummary
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 private const val TAG = "QuizViewModel"
@@ -27,7 +29,7 @@ private const val TAG = "QuizViewModel"
 @HiltViewModel
 class QuizViewModel @Inject constructor(
     private val wordRepository: WordRepository,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
 ) : ViewModel() {
     private val userId: State<String> = mutableStateOf(Firebase.auth.currentUser?.uid.toString())
 
@@ -153,18 +155,14 @@ class QuizViewModel @Inject constructor(
     }
 
     // Words stuff
-    fun fetchWords(wordsListName: String) {
+    fun fetchWords() {
         Log.d(TAG, "Words fetch çalıştı.")
-        wordRepository.getWords(_words, wordsListName)
+        viewModelScope.launch {
+            wordRepository.getAllWords().collect { words ->
+                _words.value = words
+            }
+        }
         Log.d(TAG, "Sigma words fetch çalıştı.")
         userRepository.getUserSigmaWords(userId = userId.value, currentDate = CURRENT_DATE, _sigmaWords)
-    }
-
-    // State'leri sıfırla
-    fun resetState() {
-        _words.value = emptyList()
-        _sigmaWords.value = emptyList()
-        _quiz.value = UiState.Loading
-        _result.value = UiState.Loading
     }
 }

@@ -3,6 +3,7 @@ package com.samedtemiz.sigmawords.presentation.main
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
@@ -24,6 +25,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,6 +48,7 @@ import com.exyte.animatednavbar.animation.indendshape.Height
 import com.samedtemiz.sigmawords.authentication.GoogleAuthUiClient
 import com.samedtemiz.sigmawords.presentation.Screen
 import com.samedtemiz.sigmawords.presentation.activity.MainActivity
+import com.samedtemiz.sigmawords.presentation.activity.MainViewModel
 import com.samedtemiz.sigmawords.presentation.main.home.HomeScreen
 import com.samedtemiz.sigmawords.presentation.main.home.HomeViewModel
 import com.samedtemiz.sigmawords.presentation.main.profile.ProfileScreen

@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -34,7 +35,7 @@ import com.samedtemiz.sigmawords.R
 import com.samedtemiz.sigmawords.authentication.SignInState
 import com.samedtemiz.sigmawords.presentation.ui.theme.SigmaWordsTheme
 
-@Preview(widthDp = 360, heightDp = 780)
+@Preview(widthDp = 450, heightDp = 780)
 @Composable
 fun PreviewSign(){
     SigmaWordsTheme {
@@ -109,7 +110,7 @@ fun SignInScreen(
                         modifier = Modifier
                             .fillMaxSize(),
                     ) {
-                        Text(text = "GİRİŞ", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                        Text(text = "GİRİŞ", textAlign = TextAlign.Center, fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.fillMaxWidth())
                     }
                 }
 

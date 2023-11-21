@@ -8,6 +8,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -38,6 +39,8 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
+    private val mainViewModel: MainViewModel by viewModels()
+
     @Inject
     lateinit var splashViewModel: SplashViewModel
 
@@ -50,6 +53,16 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        mainViewModel.wordsList.observe(this) { words ->
+            if (words.isNullOrEmpty()) {
+                Log.d("ROOM", "Words listesi BOŞ.")
+                mainViewModel.syncWordsFromFirebase()
+            } else {
+                Log.d("ROOM", "Words listesi DOLU")
+            }
+        }
+
         setContent {
             SigmaWordsTheme {
 
@@ -155,7 +168,6 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-
 }
 
 

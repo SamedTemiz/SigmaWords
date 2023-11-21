@@ -56,7 +56,11 @@ fun ResultScreen(viewModel: QuizViewModel) {
         resultState?.let { state ->
             when (state) {
                 is UiState.Loading -> {
-                    Column {
+                    Column(
+                        Modifier.fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
                         CircularProgressIndicator(color = MaterialTheme.colorScheme.onBackground)
                         Text(
                             text = "Sonuç hesaplanıyor...",

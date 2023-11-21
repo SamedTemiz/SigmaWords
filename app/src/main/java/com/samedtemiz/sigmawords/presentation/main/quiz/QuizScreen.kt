@@ -64,7 +64,7 @@ fun QuizScreen(
                         AnimatedShimmer(screen = "quiz")
                     }
 
-                    viewModel.fetchWords(Options.ALL_WORDS.get.toString())
+                    viewModel.fetchWords()
                 }
 
                 is UiState.Success -> {
