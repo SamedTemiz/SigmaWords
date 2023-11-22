@@ -12,6 +12,7 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.samedtemiz.sigmawords.R
 import com.samedtemiz.sigmawords.data.model.User
+import com.samedtemiz.sigmawords.util.Constant.CURRENT_DATE
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -159,5 +160,9 @@ class GoogleAuthUiClient(
         }
 
         Log.w(TAG, "BABBBAAA")
+    }
+
+    fun signAsGuest(){
+
     }
 }

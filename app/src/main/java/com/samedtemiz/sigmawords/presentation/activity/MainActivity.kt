@@ -27,6 +27,7 @@ import com.samedtemiz.sigmawords.authentication.GoogleAuthUiClient
 import com.samedtemiz.sigmawords.authentication.SignInViewModel
 import com.samedtemiz.sigmawords.presentation.Screen
 import com.samedtemiz.sigmawords.presentation.main.MainScreen
+import com.samedtemiz.sigmawords.presentation.main.MainViewModel
 import com.samedtemiz.sigmawords.presentation.sign_in.SignInScreen
 import com.samedtemiz.sigmawords.presentation.welcome.SplashViewModel
 import com.samedtemiz.sigmawords.presentation.ui.theme.SigmaWordsTheme
@@ -148,7 +149,6 @@ class MainActivity : ComponentActivity() {
                                             ).build()
                                         )
                                     }
-
                                 }
                             )
 
@@ -159,7 +159,7 @@ class MainActivity : ComponentActivity() {
                         composable(Screen.Main.route) {
                             MainScreen(
                                 mainNavController = navController,
-                                googleAuthUiClient = googleAuthUiClient
+                                googleAuthUiClient = googleAuthUiClient,
                             )
                         }
                     }

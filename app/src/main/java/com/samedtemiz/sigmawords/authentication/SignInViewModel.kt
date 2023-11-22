@@ -38,5 +38,4 @@ class SignInViewModel @Inject constructor(private val userRepository: UserReposi
             Log.d(TAG, "User database has been created.")
         }
     }
-
 }

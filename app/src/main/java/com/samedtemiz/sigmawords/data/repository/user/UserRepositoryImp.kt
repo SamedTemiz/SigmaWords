@@ -305,5 +305,4 @@ class UserRepositoryImp(private val database: FirebaseFirestore) : UserRepositor
             return false
         }
     }
-
 }
