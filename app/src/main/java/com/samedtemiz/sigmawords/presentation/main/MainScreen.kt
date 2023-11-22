@@ -3,7 +3,6 @@ package com.samedtemiz.sigmawords.presentation.main
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
@@ -25,7 +24,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,9 +44,9 @@ import com.exyte.animatednavbar.AnimatedNavigationBar
 import com.exyte.animatednavbar.animation.balltrajectory.Parabolic
 import com.exyte.animatednavbar.animation.indendshape.Height
 import com.samedtemiz.sigmawords.authentication.GoogleAuthUiClient
+import com.samedtemiz.sigmawords.data.model.User
 import com.samedtemiz.sigmawords.presentation.Screen
 import com.samedtemiz.sigmawords.presentation.activity.MainActivity
-import com.samedtemiz.sigmawords.presentation.activity.MainViewModel
 import com.samedtemiz.sigmawords.presentation.main.home.HomeScreen
 import com.samedtemiz.sigmawords.presentation.main.home.HomeViewModel
 import com.samedtemiz.sigmawords.presentation.main.profile.ProfileScreen
@@ -59,16 +57,17 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 private const val TAG = "Main Screen"
+
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
     mainNavController: NavController,
     navController: NavHostController = rememberNavController(),
-    googleAuthUiClient: GoogleAuthUiClient
+    googleAuthUiClient: GoogleAuthUiClient,
 ) {
     val context = LocalContext.current
-    val userData = remember { googleAuthUiClient.getSignedInUser() }
+    val user = remember { googleAuthUiClient.getSignedInUser() }
 
     val navigationBarItems = remember { NavigationBarItems.values() }
     var selectedIndex by remember { mutableIntStateOf(0) }
@@ -122,7 +121,7 @@ fun MainScreen(
                     selectedIndex = NavigationBarItems.Home.ordinal
 
                     val homeViewModel: HomeViewModel = hiltViewModel()
-                    HomeScreen(viewModel = homeViewModel, userData = userData)
+                    HomeScreen(viewModel = homeViewModel, userData = user)
                 }
 
                 composable(Screen.Main.Quiz.route) {
@@ -171,9 +170,6 @@ fun MainScreen(
                                         Toast.LENGTH_LONG
                                     ).show()
                                 }
-//                                navController.popBackStack()
-//                                mainNavController.popBackStack()
-//                                mainNavController.navigate(Screen.Welcome.route)
 
                                 val intent = Intent(context, MainActivity::class.java)
                                 // Eski activity'yi sonlandır
@@ -191,8 +187,24 @@ fun MainScreen(
                     val viewModel: ProfileViewModel = hiltViewModel()
                     ProfileScreen(
                         viewModel = viewModel,
-                        onSignOut = { signOutTrigger = true },
-                        onDeleteAccount = { deleteAccount = true }
+                        onSignOut = {
+                            if (googleAuthUiClient.getSignedInUser() != null)
+                                signOutTrigger = true
+                            else Toast.makeText(
+                                context,
+                                "Hesap mevcut değil",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        },
+                        onDeleteAccount = {
+                            if (googleAuthUiClient.getSignedInUser() != null)
+                                deleteAccount = true
+                            else Toast.makeText(
+                                context,
+                                "Hesap mevcut değil",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
                     )
                 }
             }
