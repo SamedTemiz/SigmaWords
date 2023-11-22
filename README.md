@@ -18,6 +18,7 @@
 - LiveData
 - Firebase: FireStore/Authentication
 - Room Database
+- Retrofit
 - Jetpack Compose
 - Navigation
 - Lottie/Glide/Markdown
