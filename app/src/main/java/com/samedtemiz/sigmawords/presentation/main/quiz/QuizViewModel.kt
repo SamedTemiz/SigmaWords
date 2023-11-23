@@ -158,7 +158,7 @@ class QuizViewModel @Inject constructor(
     fun fetchWords() {
         Log.d(TAG, "Words fetch çalıştı.")
         viewModelScope.launch {
-            wordRepository.getAllWords().collect { words ->
+            wordRepository.getAllWordsFromRoom().collect { words ->
                 _words.value = words
             }
         }

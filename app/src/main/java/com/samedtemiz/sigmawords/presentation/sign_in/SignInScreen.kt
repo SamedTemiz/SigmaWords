@@ -109,9 +109,9 @@ fun SignInScreen(
 
                 Column(
                     Modifier
-                        .fillMaxWidth().weight(1f).padding(top = 20.dp),
+                        .fillMaxWidth().weight(1f),
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Top
+                    verticalArrangement = Arrangement.Center
                 ) {
                     Card(
                         modifier = Modifier

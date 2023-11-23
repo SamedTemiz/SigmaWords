@@ -58,7 +58,7 @@ class MainActivity : ComponentActivity() {
         mainViewModel.wordsList.observe(this) { words ->
             if (words.isNullOrEmpty()) {
                 Log.d("ROOM", "Words listesi BOŞ.")
-                mainViewModel.syncWordsFromFirebase()
+                mainViewModel.syncWordsFromApi()
             } else {
                 Log.d("ROOM", "Words listesi DOLU")
             }

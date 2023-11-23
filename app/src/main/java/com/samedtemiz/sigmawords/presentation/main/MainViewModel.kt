@@ -1,6 +1,7 @@
 package com.samedtemiz.sigmawords.presentation.main
 
 import android.util.Log
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -26,7 +27,7 @@ class MainViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             try {
-                wordRepository.getAllWords().collect { words ->
+                wordRepository.getAllWordsFromRoom().collect { words ->
                     // Flow'dan gelen veriyi kullan
                     wordsList.value = words
                 }
@@ -37,36 +38,60 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun syncWordsFromFirebase() {
-        Log.d("ROOM", "Words listesi dolduruluyor.")
-        viewModelScope.launch {
+    fun syncWordsFromApi() = viewModelScope.launch {
+        Log.d("Retrofit", "Words listesi dolduruluyor.")
+
+        wordRepository.getAllWordsFromApi().let { response ->
             try {
-                val documents = withContext(Dispatchers.IO) {
-                    firebaseDb
-                        .collection("AppDatabase")
-                        .document("Words")
-                        .collection("AllWords")
-                        .get()
-                        .await()
+                if (response.isSuccessful) {
+                    val words = response.body()
+                    if (words != null) {
+                        wordRepository.insertAllWords(words)
+                    } else {
+                        Log.e("Retrofit", "Error: Response body is null")
+                    }
+                } else {
+                    // Hata durumunu
+                    Log.e("Retrofit", "Error: ${response.code()}")
                 }
-
-                val words = mutableListOf<Word>()
-                for (document in documents) {
-                    val word = document.toObject<Word>()
-                    words.add(word)
-                }
-
-                // Firebase'den çekilen veriyi yerel veritabanına ekle
-                wordRepository.insertAllWords(words = words)
-
-                // LiveData'yı güncelle
-                // Not: Bu işlem otomatik olarak yapılabilir, LiveData verisi değiştiğinde UI otomatik olarak güncellenir.
             } catch (e: Exception) {
-                // Hata yönetimi
-                Log.d("ROOM", e.message.toString())
+                // Network hatası veya diğer hataları işle
+                Log.e("Retrofit", "Exception: ${e.message}")
             }
         }
     }
+
+
+//    fun syncWordsFromFirebase() {
+//        Log.d("ROOM", "Words listesi dolduruluyor.")
+//        viewModelScope.launch {
+//            try {
+//                val documents = withContext(Dispatchers.IO) {
+//                    firebaseDb
+//                        .collection("AppDatabase")
+//                        .document("Words")
+//                        .collection("AllWords")
+//                        .get()
+//                        .await()
+//                }
+//
+//                val words = mutableListOf<Word>()
+//                for (document in documents) {
+//                    val word = document.toObject<Word>()
+//                    words.add(word)
+//                }
+//
+//                // Firebase'den çekilen veriyi yerel veritabanına ekle
+//                wordRepository.insertAllWords(words = words)
+//
+//                // LiveData'yı güncelle
+//                // Not: Bu işlem otomatik olarak yapılabilir, LiveData verisi değiştiğinde UI otomatik olarak güncellenir.
+//            } catch (e: Exception) {
+//                // Hata yönetimi
+//                Log.d("ROOM", e.message.toString())
+//            }
+//        }
+//    }
 }
 
 
