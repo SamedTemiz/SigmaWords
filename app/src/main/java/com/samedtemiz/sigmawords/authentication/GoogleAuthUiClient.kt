@@ -161,8 +161,4 @@ class GoogleAuthUiClient(
 
         Log.w(TAG, "BABBBAAA")
     }
-
-    fun signAsGuest(){
-
-    }
 }

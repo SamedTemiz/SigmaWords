@@ -94,7 +94,7 @@ fun StartQuizScreen(
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.secondary
             ),
-            modifier = Modifier.fillMaxWidth(0.5f)
+            modifier = Modifier.fillMaxWidth(0.6f)
         ) {
             Column {
                 Row(
