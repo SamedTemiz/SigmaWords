@@ -17,11 +17,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -61,6 +64,7 @@ fun SignInScreen(
             .padding(16.dp),
         contentAlignment = Alignment.Center
     ) {
+        var click = remember { mutableStateOf(false) }
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -77,7 +81,9 @@ fun SignInScreen(
 
                 Column(
                     Modifier
-                        .fillMaxWidth().weight(1f).padding(horizontal = 16.dp),
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .padding(horizontal = 16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Bottom
                 ) {
@@ -93,7 +99,7 @@ fun SignInScreen(
                             append("Welcome to ")
                             withStyle(
                                 style = SpanStyle(
-                                    fontSize = 24.sp,
+                                    fontSize = 22.sp,
                                     fontWeight = FontWeight.Bold
                                 )
                             ){
@@ -102,6 +108,7 @@ fun SignInScreen(
                         },
                         color = MaterialTheme.colorScheme.onBackground,
                         fontSize = 20.sp,
+                        maxLines = 2,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -109,7 +116,8 @@ fun SignInScreen(
 
                 Column(
                     Modifier
-                        .fillMaxWidth().weight(1f),
+                        .fillMaxWidth()
+                        .weight(1f),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
@@ -118,7 +126,8 @@ fun SignInScreen(
                             .fillMaxWidth(0.7f)
                             .fillMaxHeight(0.4f)
                             .clickable {
-                            onSignInClick()
+                                onSignInClick()
+                                click.value = true
                             },
                         shape = RoundedCornerShape(10.dp),
                         colors = CardDefaults.cardColors(
@@ -148,6 +157,10 @@ fun SignInScreen(
                     }
                 }
             }
+        }
+
+        if(click.value && state.isSignInSuccessful.not()){
+            CircularProgressIndicator()
         }
     }
 }
